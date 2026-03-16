@@ -7,7 +7,6 @@ import plotly.express as px
 st.set_page_config(layout="wide")
 
 ## Aquí se carga el archivo CSV ##
-df = pd.read_csv('infoenero.csv')
 
 st.set_page_config(
     page_title="Inicio",
