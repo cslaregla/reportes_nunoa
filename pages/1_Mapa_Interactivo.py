@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
-from shapely.geometry import Point, Polygon, box
+from shapely.geometry import Point, Polygon
 from folium.plugins import HeatMap
 from datetime import datetime
 
@@ -39,8 +39,6 @@ if 'mapa_data' not in st.session_state:
     st.session_state.mapa_data = []
 
 st.subheader("Filtros")
-
-
 ##
 op_ingreso = ['1445', 'EXTERNO','INSPECTOR EN TERRENO','INTERNO','JEFATURA','OPERADOR CÁMARAS','PROALERT','SOSAFE','WHATSAPP','OTROS']
 op_cuadrantes = ['Nro. 118','Nro. 119','Nro. 120','Nro. 121','Nro. 129','Nro. 130','Nro. 131','Nro. 132','Nro. 133','No aplica']
@@ -62,8 +60,7 @@ opi_hfinal = list(op_hfinal.items())
 opi_mes = list(op_mes.items())
 col1, col2, col3, col4, col5 = st.columns(5)
 col6, col7, col8, col9, col10 = st.columns(5)
-
-
+##
 with col1:
     ingreso = st.selectbox("Vía de Ingreso", op_ingreso, index=None,placeholder='Elige')
 with col2:
@@ -77,21 +74,18 @@ with col4:
     else:
         tipo = st.selectbox("Tipo", op_tipo, index=None,placeholder='Elige')
 with col5:
-    #hinicio = st.selectbox("Inicio", op_hinicio, index=None,placeholder='Elige')
     shinicio = st.selectbox("Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shinicio:
         hinicio = shinicio[0]
     else:
         hinicio = None
 with col6:
-    #hfinal = st.selectbox("Final", op_hfinal, index=None,placeholder='Elige')
     shfinal = st.selectbox("Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shfinal:
         hfinal = shfinal[0]
     else:
         hfinal = None
 with col7:
-    #mes = st.selectbox("Mes", op_mes, index=None,placeholder='Elige')
     smes = st.selectbox("Mes",options=opi_mes,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if smes:
         mes = smes[0]
@@ -114,15 +108,14 @@ if st.button("Visualizar Mapa"):
         # Procesar datos
         c = []
         try:
-            with open('datos_combinados.txt','r', encoding='utf-8') as file:
+            with open('infomapa.txt','r', encoding='utf-8') as file:
                 for row in file:
                     lrow = row.split(',')
                     format_pattern = '%Y-%m-%d %H:%M' 
-                    date_object = datetime.strptime(lrow[0], format_pattern)
-                
+                    date_object = datetime.strptime(lrow[0], format_pattern)            
+                    
                     # Verificar cada filtro (solo si está seleccionado)
                     cumple_filtros = True
-                    
                     if ingreso and ingreso != lrow[1]:
                         cumple_filtros = False
                     
@@ -158,17 +151,17 @@ if st.button("Visualizar Mapa"):
 
                     if ffinal and ffinal < date_object.date():
                         cumple_filtros = False                    
+                    
                     # Si cumple todos los filtros seleccionados, agregar el punto
                     if cumple_filtros:
                         if lrow[5] != 'None\n':
                             c.append([float(lrow[5]),float(lrow[6].strip('\n')),lrow[0],lrow[2],lrow[3],lrow[4]])
-            
             file.close()
             st.session_state.mapa_data = c
             
         except FileNotFoundError:
-            st.error("No se encontró el archivo sample.txt")
-##
+            st.error("No se encontró el archivo con la información")
+
 # Mostrar mapa si se aplicó el filtro
 if st.session_state.mostrar_mapa:
     st.subheader("Instrucciones")
