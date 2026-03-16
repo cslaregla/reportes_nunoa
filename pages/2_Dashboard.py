@@ -6,13 +6,43 @@ import numpy as np
 st.set_page_config(page_title="Dashboard", layout="wide")
 
 st.title("📈 Dashboard Reportes Central Ñuñoa 2026")
-
-## FUNCIONES ##
+## Cargo el excel ##
+dfr = pd.read_csv('infofinal.csv',skiprows=1)
+dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
+## Agrego la opción de elegir un período ##
+col1, col2 = st.columns(2)
+with col1:
+    finicio = st.date_input("Fecha inicial:", value=None)
+with col2:
+    ffinal = st.date_input("Fecha final:", value=None)
+###########################################
+if finicio and ffinal:
+    df = dfr[(dfr['FECHA Y HORA'].dt.date >= finicio) & (dfr['FECHA Y HORA'].dt.date <= ffinal)].copy()
+else:
+    df = dfr.copy()
+## COM FUNCIONES ##
 def get_rango_horario(hora):
     """Convierte hora (0-23) en rango de 4 horas"""
     rango = int((hora // 4) * 4)
     return f"{rango:02d}:00 - {rango+3:02d}:59"
-## FUNCIONES ##
+##
+def pie_tipo(cat):
+    df_filtrado = df[df['CATEGORIA'] == cat]
+    df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
+    fig_pie = px.pie(
+        df_pie,
+        names='TIPO DE PROCEDIMIENTO',
+        values='cantidad',
+        title='Distribución por categoría: '+cat
+    )
+    fig_pie.update_traces(
+        textposition='inside',
+        textinfo='label',  # Nombre + Porcentaje + Valor
+        hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
+    )
+    st.plotly_chart(fig_pie, width='stretch')
+##
+## FIN FUNCIONES ##
 
 # Título y botones en una fila
 col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
@@ -34,20 +64,6 @@ with col4:
         st.switch_page("pages/3_Tabla_Interactiva.py")
 
 st.markdown("---")
-## Agrego la opción de elegir un período ##
-col1, col2 = st.columns(2)
-with col1:
-    finicio = st.date_input("Fecha inicial:", value=None)
-with col2:
-    ffinal = st.date_input("Fecha final:", value=None)
-###########################################
-## Cargo el excel ##
-dfr = pd.read_csv('infofinal.csv',skiprows=1)
-dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
-if finicio and ffinal:
-    df = dfr[(dfr['FECHA Y HORA'].dt.date >= finicio) & (dfr['FECHA Y HORA'].dt.date <= ffinal)].copy()
-else:
-    df = dfr.copy()
 st.markdown("### 📊 Análisis General")
 ## GRÁFICO I ##
 df_pie = df.groupby('CUADRANTE').size().reset_index(name='Reportes')
@@ -287,107 +303,10 @@ fig_heatmap.update_layout(
 )
 st.plotly_chart(fig_heatmap, width='stretch')
 
-## GRÁFICO XIII ##
-df_filtrado = df[df['CATEGORIA'] == 'Seguridad']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Seguridad'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO XIV ##
-df_filtrado = df[df['CATEGORIA'] == 'Planes Operativos']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Planes Operativos'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO XV ##
-df_filtrado = df[df['CATEGORIA'] == 'Emergencia/Espacio Públicos']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Emergencia/Espacio Públicos'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO XVI ##
-df_filtrado = df[df['CATEGORIA'] == 'Fiscalización']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Fiscalización'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO XVII ##
-df_filtrado = df[df['CATEGORIA'] == 'Incivilidades']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Incivilidades'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO XVIII ##
-df_filtrado = df[df['CATEGORIA'] == 'Otros']
-df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='TIPO DE PROCEDIMIENTO',
-    values='cantidad',
-    title='Distribución por categoría: Otros'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-fig_pie.update_layout(
-    legend=dict(
-        orientation="h",  # Horizontal
-        yanchor="bottom",
-        y=-0.15,  # Debajo del gráfico
-        xanchor="center",
-        x=0.5
-    )
-)
-st.plotly_chart(fig_pie, width='stretch')
+## GRÁFICOS XIII, XIV, XV, XVI, XVII, XVIII ##
+pie_tipo('Seguridad')
+pie_tipo('Planes Operativos')
+pie_tipo('Emergencia/Espacio Públicos')
+pie_tipo('Fiscalización')
+pie_tipo('Incivilidades')
+pie_tipo('Otros')
