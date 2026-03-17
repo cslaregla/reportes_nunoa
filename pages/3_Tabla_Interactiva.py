@@ -62,21 +62,18 @@ with col4:
     else:
         tipo = st.selectbox("Tipo", op_tipo, index=None,placeholder='Elige')
 with col5:
-    #hinicio = st.selectbox("Inicio", op_hinicio, index=None,placeholder='Elige')
     shinicio = st.selectbox("Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shinicio:
         hinicio = shinicio[0]
     else:
         hinicio = None
 with col6:
-    #hfinal = st.selectbox("Final", op_hfinal, index=None,placeholder='Elige')
     shfinal = st.selectbox("Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shfinal:
         hfinal = shfinal[0]
     else:
         hfinal = None
 with col7:
-    #mes = st.selectbox("Mes", op_mes, index=None,placeholder='Elige')
     smes = st.selectbox("Mes",options=opi_mes,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if smes:
         mes = smes[0]
@@ -90,12 +87,6 @@ with col10:
     ffinal = st.date_input("Hasta", value=None)
 
 ## Cargo el archivo .csv ##
-# df1 = pd.read_csv('infoenero.csv')
-# df2 = pd.read_csv('infofebrero.csv')
-
-# df = pd.concat([df1, df2], ignore_index=True)
-
-# df.to_csv('infofinal.csv', index=False)
 df = pd.read_csv('infofinaltest.csv')
 ###########################
 df = df.dropna(subset=['ID ASIGNADO /TICKET'])
