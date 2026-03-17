@@ -42,6 +42,82 @@ def pie_tipo(cat):
     )
     st.plotly_chart(fig_pie, width='stretch')
 ##
+def pie(filtro):
+    df_pie = df.groupby(filtro).size().reset_index(name='cantidad')
+    titulo = filtro.title()
+    fig_pie = px.pie(
+        df_pie,
+        names=filtro,
+        values='cantidad',
+        title='Reportes por '+titulo
+    )
+    fig_pie.update_traces(
+        textposition='inside',
+        textinfo='label',  # Nombre + Porcentaje + Valor
+        hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
+    )
+    fig_pie.update_layout(
+        legend=dict(
+            orientation="h",  # Horizontal
+            yanchor="bottom",
+            y=-0.15,  # Debajo del gráfico
+            xanchor="center",
+            x=0.5
+        )
+    )
+    st.plotly_chart(fig_pie, width='stretch')
+##
+def barra(filtro):
+    if filtro == 'Día de la Semana':
+        counts = df["FECHA Y HORA"].dt.weekday.value_counts()
+    elif filtro == 'Hora':
+        counts = df["FECHA Y HORA"].dt.hour.value_counts()
+    elif filtro == 'CATEGORIA':
+        counts = df["CATEGORIA"].value_counts()
+        filtro = filtro.title()
+    fig_barras = px.bar(
+        counts,
+        title='Reportes por '+filtro
+    )
+    fig_barras.update_layout(
+        xaxis_title=filtro,
+        yaxis_title='Reportes'
+    )
+    st.plotly_chart(fig_barras,width='stretch')
+##
+def matriz(filtro):
+    dfm = df.copy()
+    titulo = filtro.upper()
+    dfm['fecha_completa'] = pd.to_datetime(dfm['FECHA Y HORA'])
+    dfm['hora'] = dfm['fecha_completa'].dt.hour
+    dfm = dfm.dropna(subset=['hora'])
+    dfm['hora'] = dfm['hora'].astype(int)
+    dfm['rango_horario'] = dfm['hora'].apply(get_rango_horario)
+    matriz = pd.crosstab(dfm['rango_horario'], dfm[titulo])
+    rangos_orden = [
+        "00:00 - 03:59",
+        "04:00 - 07:59",
+        "08:00 - 11:59",
+        "12:00 - 15:59",
+        "16:00 - 19:59",
+        "20:00 - 23:59"
+    ]
+    rangos_existentes = [r for r in rangos_orden if r in matriz.index]
+    matriz = matriz.loc[rangos_existentes]
+    fig_heatmap = px.imshow(
+        matriz,
+        labels=dict(x=filtro, y="Rango Horario", color="Reportes"),
+        title="Matriz de Calor: Registros por "+filtro+" y Rango Horario",
+        color_continuous_scale='RdYlGn_r',
+        aspect='auto'
+    )
+    fig_heatmap.update_traces(text=matriz.values, texttemplate='%{text}')
+    fig_heatmap.update_layout(
+        height=400,
+        xaxis_title=filtro,
+        yaxis_title='Rango Horario'
+    )
+    st.plotly_chart(fig_heatmap, width='stretch')
 ## FIN FUNCIONES ##
 
 # Título y botones en una fila
@@ -65,89 +141,14 @@ with col4:
 
 st.markdown("---")
 st.markdown("### 📊 Análisis General")
-## GRÁFICO I ##
-df_pie = df.groupby('CUADRANTE').size().reset_index(name='Reportes')
-fig_pie = px.pie(
-    df_pie,
-    names='CUADRANTE',
-    values='Reportes',
-    title='Reportes por Cuadrante'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-fig_pie.update_layout(
-    legend=dict(
-        orientation="h",  # Horizontal
-        yanchor="bottom",
-        y=-0.15,  # Debajo del gráfico
-        xanchor="center",
-        x=0.5
-    )
-)
-st.plotly_chart(fig_pie, width='stretch')
+## GRÁFICOS I, II ##
+pie('CUADRANTE')
+pie('CANAL DE INGRESO')
 
-## GRÁFICO II ##
-df_pie = df.groupby('CANAL DE INGRESO').size().reset_index(name='cantidad')
-fig_pie = px.pie(
-    df_pie,
-    names='CANAL DE INGRESO',
-    values='cantidad',
-    title='Reportes por Vía de Ingreso'
-)
-fig_pie.update_traces(
-    textposition='inside',
-    textinfo='label',  # Nombre + Porcentaje + Valor
-    hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-)
-fig_pie.update_layout(
-    legend=dict(
-        orientation="h",  # Horizontal
-        yanchor="bottom",
-        y=-0.15,  # Debajo del gráfico
-        xanchor="center",
-        x=0.5
-    )
-)
-st.plotly_chart(fig_pie, width='stretch')
-
-## GRÁFICO III ##
-counts = df["FECHA Y HORA"].dt.weekday.value_counts()
-fig_barras = px.bar(
-    counts,
-    title='Reportes por Día de la Semana'
-)
-fig_barras.update_layout(
-    xaxis_title='Día de la Semana',
-    yaxis_title='Reportes'
-)
-st.plotly_chart(fig_barras,width='stretch')
-
-## GRÁFICO IV ##
-counts = df["FECHA Y HORA"].dt.hour.value_counts()
-fig_barras = px.bar(
-    counts,
-    title='Reportes por Hora'
-)
-fig_barras.update_layout(
-    xaxis_title='Hora',
-    yaxis_title='Reportes'
-)
-st.plotly_chart(fig_barras,width='stretch')
-
-## GRÁFICO V ##
-counts = df["CATEGORIA"].value_counts()
-fig_barras = px.bar(
-    counts,
-    title='Reportes por Categoría'
-)
-fig_barras.update_layout(
-    xaxis_title='Categoría',
-    yaxis_title='Reportes'
-)
-st.plotly_chart(fig_barras,width='stretch')
+## GRÁFICO III, IV, V ##
+barra('Día de la Semana')
+barra('Hora')
+barra('CATEGORIA')
 
 ## Gráfico VI ##
 df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
@@ -203,69 +204,9 @@ fig = px.line(df_semana, x='semana', y='cantidad',
 st.plotly_chart(fig, width='stretch')
 st.markdown("### 📅 Análisis Detallado")
 
-## GRÁFICO X ##
-df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
-df['hora'] = df['fecha_completa'].dt.hour
-df = df.dropna(subset=['hora'])
-df['hora'] = df['hora'].astype(int)
-df['rango_horario'] = df['hora'].apply(get_rango_horario)
-matriz = pd.crosstab(df['rango_horario'], df['CUADRANTE'])
-rangos_orden = [
-    "00:00 - 03:59",
-    "04:00 - 07:59",
-    "08:00 - 11:59",
-    "12:00 - 15:59",
-    "16:00 - 19:59",
-    "20:00 - 23:59"
-]
-rangos_existentes = [r for r in rangos_orden if r in matriz.index]
-matriz = matriz.loc[rangos_existentes]
-fig_heatmap = px.imshow(
-    matriz,
-    labels=dict(x="Cuadrante", y="Rango Horario", color="Reportes"),
-    title="Matriz de Calor: Registros por Cuadrante y Rango Horario",
-    color_continuous_scale='RdYlGn_r',
-    aspect='auto'
-)
-fig_heatmap.update_traces(text=matriz.values, texttemplate='%{text}')
-fig_heatmap.update_layout(
-    height=400,
-    xaxis_title='Cuadrante',
-    yaxis_title='Rango Horario'
-)
-st.plotly_chart(fig_heatmap, width='stretch')
-
-## GRÁFICO XI ##
-df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
-df['hora'] = df['fecha_completa'].dt.hour
-df = df.dropna(subset=['hora'])
-df['hora'] = df['hora'].astype(int)
-df['rango_horario'] = df['hora'].apply(get_rango_horario)
-matriz = pd.crosstab(df['rango_horario'], df['CATEGORIA'])
-rangos_orden = [
-    "00:00 - 03:59",
-    "04:00 - 07:59",
-    "08:00 - 11:59",
-    "12:00 - 15:59",
-    "16:00 - 19:59",
-    "20:00 - 23:59"
-]
-rangos_existentes = [r for r in rangos_orden if r in matriz.index]
-matriz = matriz.loc[rangos_existentes]
-fig_heatmap = px.imshow(
-    matriz,
-    labels=dict(x="Categoría", y="Rango Horario", color="Reportes"),
-    title="Matriz de Calor: Registros por Categoría y Rango Horario",
-    color_continuous_scale='RdYlGn_r',
-    aspect='auto'
-)
-fig_heatmap.update_traces(text=matriz.values, texttemplate='%{text}')
-fig_heatmap.update_layout(
-    height=400,
-    xaxis_title='Categoría',
-    yaxis_title='Rango Horario'
-)
-st.plotly_chart(fig_heatmap, width='stretch')
+## GRÁFICO X, XI ##
+matriz('Cuadrante')
+matriz('Categoria')
 
 ## GRÁFICO XII ##
 df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
