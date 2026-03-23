@@ -58,9 +58,8 @@ with col3:
 with col4:
     if categoria:
         ltipo = dop_categoria[categoria]
-        tipo = st.selectbox("Tipo", ltipo, index=None,placeholder='Elige')
+        tipo = st.multiselect("Tipo", op_tipo,placeholder='Elige')
     else:
-        #tipo = st.selectbox("Tipo", op_tipo, index=None,placeholder='Elige')
         tipo = st.multiselect("Tipo", op_tipo,placeholder='Elige')
 with col5:
     shinicio = st.selectbox("Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
