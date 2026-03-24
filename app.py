@@ -5,7 +5,7 @@ st.set_page_config(layout="wide")
 
 st.set_page_config(
     page_title="Inicio",
-    page_icon="./logo.png",
+    page_icon="./logo2.png",
     layout="wide"
 )
 
