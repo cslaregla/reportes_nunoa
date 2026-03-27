@@ -73,8 +73,11 @@ with met9:
     calle_metric = df['CALLE'].value_counts().index[0]
     st.metric("Calle con más Reportes",calle_metric,delta=f"{df['CALLE'].value_counts().iloc[0]}")
 with met10:
-    lugar_metric = df['LUGAR PÚBLICO /  PRIVADO'].value_counts().index[0]
-    st.metric("Tipo de lugar más común",lugar_metric,delta=f"{df['LUGAR PÚBLICO /  PRIVADO'].value_counts().iloc[0]}")
+    if df['LUGAR PÚBLICO /  PRIVADO'].isnull().all():
+        st.metric("Tipo de lugar más común",'NO APLICA')
+    else:
+        lugar_metric = df['LUGAR PÚBLICO /  PRIVADO'].value_counts().index[0]
+        st.metric("Tipo de lugar más común",lugar_metric,delta=f"{df['LUGAR PÚBLICO /  PRIVADO'].value_counts().iloc[0]}")
 with met11:
     dia_metric = df['FECHA Y HORA'].dt.day_name().value_counts().index[0]
     dict_dias = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles','Thursday':'Jueves','Friday':'Viernes','Saturday':'Sábado','Sunday':'Domingo'}
@@ -289,5 +292,6 @@ pie_tipo('Seguridad')
 pie_tipo('Planes Operativos')
 pie_tipo('Emergencia/Espacio Públicos')
 pie_tipo('Fiscalización')
-pie_tipo('Incivilidades')
+if df[df['CATEGORIA'] == 'Incivilidades'].shape[0] > 0:
+    pie_tipo('Incivilidades')
 pie_tipo('Otros')
