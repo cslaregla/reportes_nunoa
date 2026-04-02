@@ -84,7 +84,14 @@ with met11:
     dies = dict_dias[dia_metric]
     st.metric("Día de la semana con más Reportes",dies,delta=f"{df['FECHA Y HORA'].dt.day_name().value_counts().iloc[0]}")
 with met12:
-    st.metric("Métrica por añadir",35,delta=-10)
+    # hasignacion = df['HORA DE ASIGNACION A INSPECTOR'].mean()
+    # harribo = df['HORA DE ARRIBO'].mean()
+    # htermino = df['HORA DE TERMINO'].mean()
+    # st.metric("Métrica por añadir",hasignacion,delta=-10)
+    # st.metric("Métrica por añadir",harribo,delta=-10)
+    # st.metric("Métrica por añadir",htermino,delta=-10)
+    pass
+
 ## COM FUNCIONES ##
 def get_rango_horario(hora):
     """Convierte hora (0-23) en rango de 4 horas"""

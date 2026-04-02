@@ -218,9 +218,10 @@ if st.session_state.mostrar_mapa:
     for element in lcuad:
         folium.Polygon(
             locations=element,
-            color="black",
+            color="blue",
             fill=False,
-            fill_color="black"
+            opacity = 0.5,
+            fill_color="blue"
             ).add_to(m)
     
     ## Agregar herramienta de dibujo ##
