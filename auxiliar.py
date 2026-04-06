@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 
@@ -13,6 +14,12 @@ df = pd.read_csv(new_file+'.csv',sep=';',engine='python')
 
 
 ## Creo funciones que corrigen los errores ##
+def is_time(time_str):
+    try:
+        datetime.strptime(time_str, '%H:%M')
+        return True
+    except ValueError:
+        return False
 def fcalle(valor):
     if valor == 'Seguridad':
         return ''
@@ -76,7 +83,7 @@ df = df[['NRO','ID ASIGNADO /TICKET','FECHA Y HORA','OPERADOR','CANAL DE INGRESO
 ## Aplico las funciones al nuevo archivo ##
 # df['CUADRANTE'] = df['CUADRANTE'].apply(fcuadrante)
 # df['CANAL DE INGRESO'] = df['CANAL DE INGRESO'].apply(fcanalingreso)
-df['CALLE'] = df['CALLE'].apply(fcalle)
+#df['CALLE'] = df['CALLE'].apply(fcalle)
 
 ## Imprimo los elementos diferentes que hay en un campo en especifico (para corregir errores) ##
 lfinal = ['7X3 delitos violentos', 'Accidente de tránsito (choque/colisión/atropello)', 'Acera en mal estado', 'Actividad sospechosa', 'Agresión', 'Alarma activada', 'Alcantarilla colapsada', 'Amenazas', 'Anegamiento de calle y paso bajo nivel', 'Anegamiento domicilios', 'Apoyo a Bomberos', 'Apoyo a Carabineros', 'Apoyo a SAMU', 'Artefacto explosivo o paquete sospechoso', 'Botar chicle, colillas o desechos en la vía pública', 'Cables a baja altura / Cables cortados', 'Caida de arbol', 'Carpa o Ruco en BNUP', 'Circuito y luminarias dañadas', 'Comercio ambulante Ilegal', 'Consumo de alcohol en vía pública', 'Consumo de drogas', 'Control de Transito', 'Corte energía eléctrica', 'Corte suministro de agua potable', 'Daños propiedad privada', 'Daños propiedad pública', 'Delito sexual', 'Desganche arbolado', 'Detención ciudadana', 'Detenidos', 'Disparos', 'Disturbios', 'Ebriedad', 'Emanación de gas/ Derrame o Materiales peligrosos', 
@@ -89,9 +96,17 @@ lfinal = ['7X3 delitos violentos', 'Accidente de tránsito (choque/colisión/atr
 #         print(str(element))
 
 ## Imprime las entradas con un valor específico en un campo a especificar ##
+# c = 0
+# s = timedelta()
 # for index, row in df.iterrows():
-#     if str(row['TIPO DE PROCEDIMIENTO']) == 'ESCOMBROS EN DOMICILIO':
-#         print(row['FECHA Y HORA']) 
+#     if is_time(str((row['HORA DE ASIGNACION A INSPECTOR']))) == True and is_time(str(row['HORA DE ARRIBO'])) == True:
+#         if datetime.strptime(str(row['HORA DE ARRIBO']), '%H:%M') > datetime.strptime(str(row['HORA DE ASIGNACION A INSPECTOR']), '%H:%M'):
+#             dif = datetime.strptime(str(row['HORA DE ARRIBO']), '%H:%M') - datetime.strptime(str(row['HORA DE ASIGNACION A INSPECTOR']), '%H:%M')
+#             print(dif)
+#             s = s + dif
+#             #print(row['HORA DE ASIGNACION A INSPECTOR']+' '+row['HORA DE ARRIBO'])
+#             c+=1
+# print(s/c)
 
 ## Lo guardo en un nuevo archivo que tendrá el mismo nombre que el original pero + 'P' al final, para poder diferenciarlo ##
 #df.to_csv(new_file+'P.csv', index=False,sep=';')

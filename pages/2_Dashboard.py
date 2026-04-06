@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -29,6 +29,9 @@ st.markdown("---")
 ## Cargo el excel ##
 dfr = pd.read_csv('info.csv', sep=';', engine='python')
 dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
+dias_hist = ((dfr['FECHA Y HORA'].max() - dfr['FECHA Y HORA'].min()).days)+1
+prom_hist = round(len(dfr) / max(dias_hist, 1), 1)
+last_hist = dfr.iloc[-1]['FECHA Y HORA']
 ## Agrego la opción de elegir un período ##
 col1, col2 = st.columns(2)
 with col1:
@@ -40,8 +43,8 @@ if finicio and ffinal:
     df = dfr[(dfr['FECHA Y HORA'].dt.date >= finicio) & (dfr['FECHA Y HORA'].dt.date <= ffinal)].copy()
 else:
     df = dfr.copy()
-
-st.subheader("ℹ️ Métricas Principales")
+st.markdown(f"*Última Actualización: {last_hist}")
+st.subheader(f"ℹ️ Métricas Principales")
 met1, met2, met3, met4 = st.columns(4)
 with met1:
     st.metric("Número de Reportes",f"{df.shape[0]}")
@@ -66,7 +69,7 @@ with met7:
     st.metric("Días Cubiertos",dias_cubiertos)
 with met8:
     promedio_diario = round(len(df) / max(dias_cubiertos, 1), 1)
-    st.metric("Promedio Diario",f"{promedio_diario} reportes/día")
+    st.metric("Promedio Diario",f"{promedio_diario} reportes/día",delta=round((prom_hist-promedio_diario),1))
 
 met9, met10, met11, met12 = st.columns(4)
 with met9:
@@ -76,7 +79,7 @@ with met9:
     st.metric("Calle con más Reportes",calle_metric,delta=f"{df['CALLE'].value_counts().iloc[0]}")
 with met10:
     if df['LUGAR PÚBLICO /  PRIVADO'].isnull().all():
-        st.metric("Tipo de lugar más común",'NO APLICA')
+        st.metric("Tipo de lugar más común",'NO Aplica')
     else:
         lugar_metric = df['LUGAR PÚBLICO /  PRIVADO'].value_counts().index[0]
         st.metric("Tipo de lugar más común",lugar_metric,delta=f"{df['LUGAR PÚBLICO /  PRIVADO'].value_counts().iloc[0]}")
@@ -85,14 +88,36 @@ with met11:
     dict_dias = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles','Thursday':'Jueves','Friday':'Viernes','Saturday':'Sábado','Sunday':'Domingo'}
     dies = dict_dias[dia_metric]
     st.metric("Día de la semana con más Reportes",dies,delta=f"{df['FECHA Y HORA'].dt.day_name().value_counts().iloc[0]}")
+##
+def is_time(time_str):
+    try:
+        datetime.strptime(str(time_str), '%H:%M')
+        return True
+    except ValueError:
+        return False
+##
 with met12:
-    # hasignacion = df['HORA DE ASIGNACION A INSPECTOR'].mean()
-    # harribo = df['HORA DE ARRIBO'].mean()
-    # htermino = df['HORA DE TERMINO'].mean()
-    # st.metric("Métrica por añadir",hasignacion,delta=-10)
-    # st.metric("Métrica por añadir",harribo,delta=-10)
-    # st.metric("Métrica por añadir",htermino,delta=-10)
-    pass
+    dft = df[df['HORA DE ASIGNACION A INSPECTOR'].apply(is_time) & df['HORA DE ARRIBO'].apply(is_time)]
+    dft = dft[dft['HORA DE ARRIBO'] > dft['HORA DE ASIGNACION A INSPECTOR']]
+    dft['HORA DE ASIGNACION A INSPECTOR'] = pd.to_timedelta(dft['HORA DE ASIGNACION A INSPECTOR'] + ':00')
+    dft['HORA DE ARRIBO'] = pd.to_timedelta(dft['HORA DE ARRIBO'] + ':00')
+    dft['DIF'] = dft['HORA DE ARRIBO'] - dft['HORA DE ASIGNACION A INSPECTOR']
+    prom = str(dft['DIF'].mean())
+    promf = prom.split(' ')[2]
+    promf = promf.split('.')[0]
+    st.metric("Media Tiempo Asignación-Arribo",promf)
+
+met13, met14, met15, met16 = st.columns(4)
+with met13:
+    dft = df[df['HORA DE ARRIBO'].apply(is_time) & df['HORA DE TERMINO'].apply(is_time)]
+    dft = dft[dft['HORA DE TERMINO'] > dft['HORA DE ARRIBO']]
+    dft['HORA DE ARRIBO'] = pd.to_timedelta(dft['HORA DE ARRIBO'] + ':00')
+    dft['HORA DE TERMINO'] = pd.to_timedelta(dft['HORA DE TERMINO'] + ':00')
+    dft['DIF'] = dft['HORA DE TERMINO'] - dft['HORA DE ARRIBO']
+    prom = str(dft['DIF'].mean())
+    promf = prom.split(' ')[2]
+    promf = promf.split('.')[0]
+    st.metric("Media Tiempo Arribo-Termino",promf)
 
 ## COM FUNCIONES ##
 def get_rango_horario(hora):

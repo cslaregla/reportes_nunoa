@@ -62,13 +62,13 @@ with col4:
     else:
         tipo = st.multiselect("Tipo", op_tipo,placeholder='Elige')
 with col5:
-    shinicio = st.selectbox("Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
+    shinicio = st.selectbox("Hora Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shinicio:
         hinicio = shinicio[0]
     else:
         hinicio = None
 with col6:
-    shfinal = st.selectbox("Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
+    shfinal = st.selectbox("Hora Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shfinal:
         hfinal = shfinal[0]
     else:
@@ -85,6 +85,13 @@ with col9:
     finicio = st.date_input("Desde", value=None)
 with col10:
     ffinal = st.date_input("Hasta", value=None)
+######
+col11, col12, col13, col14, col15 = st.columns(5)
+with col11:
+    calle = st.text_input("Calle",'',placeholder="Elige")
+with col12:
+    palabra = st.text_input("Palabra Clave",'',placeholder="Elige")
+######
 
 ## Cargo el archivo .csv ##
 df = pd.read_csv('info.csv', sep=';', engine='python')
@@ -117,7 +124,10 @@ if finicio:
     df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.date >= finicio]
 if ffinal:
     df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.date <= ffinal]
-    
+if calle:
+    df_filtrado = df_filtrado[df_filtrado['CALLE'].str.contains(calle, case=False, na=False) | df_filtrado['CALLE QUE INTERSECTA'].str.contains(calle, case=False, na=False)]
+if palabra:
+    df_filtrado = df_filtrado[df_filtrado['INFORME'].str.contains(palabra, case=False, na=False) | df_filtrado['DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)'].str.contains(palabra, case=False, na=False)]
 st.subheader("Resultados")
 st.write(f"Total de registros: {len(df_filtrado)}")
 st.dataframe(df_filtrado[df_filtrado.columns[2:26]], width='stretch')

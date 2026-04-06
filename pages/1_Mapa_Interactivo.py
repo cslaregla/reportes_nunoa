@@ -74,13 +74,13 @@ with col4:
     else:
         tipo = st.multiselect("Tipo", op_tipo,placeholder='Elige')
 with col5:
-    shinicio = st.selectbox("Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
+    shinicio = st.selectbox("Hora Inicio",options=opi_hinicio,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shinicio:
         hinicio = shinicio[0]
     else:
         hinicio = None
 with col6:
-    shfinal = st.selectbox("Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
+    shfinal = st.selectbox("Hora Final",options=opi_hfinal,format_func=lambda o: o[1], index=None, placeholder='Elige')
     if shfinal:
         hfinal = shfinal[0]
     else:
@@ -109,55 +109,37 @@ if st.button("Visualizar Mapa"):
         # Procesar datos
         c = []
         try:
-            with open('infomapa.txt','r', encoding='utf-8') as file:
-                for row in file:
-                    lrow = row.split(',')
-                    format_pattern = '%Y-%m-%d %H:%M' 
-                    date_object = datetime.strptime(lrow[0], format_pattern)            
-                    
-                    # Verificar cada filtro (solo si está seleccionado)
-                    cumple_filtros = True
-                    if ingreso and ingreso != lrow[1]:
-                        cumple_filtros = False
-                    
-                    if cuadrante and cuadrante != lrow[4]:
-                        cumple_filtros = False
-                    
-                    if categoria and categoria != lrow[2]:
-                        cumple_filtros = False
-                    
-                    if tipo and lrow[3] not in tipo:
-                        cumple_filtros = False
-                    
-                    if ano and ano != date_object.year:
-                        cumple_filtros = False
-                    
-                    if mes and mes != date_object.month:
-                        cumple_filtros = False
-
-                    if hinicio and not hfinal and hinicio > date_object.hour:
-                        cumple_filtros = False
-
-                    if hfinal and not hinicio and hfinal <= date_object.hour:
-                        cumple_filtros = False
-
-                    if hinicio and hfinal and hfinal > hinicio and (hinicio > date_object.hour or hfinal <= date_object.hour):
-                        cumple_filtros = False
-
-                    if hinicio and hfinal and hfinal < hinicio and (hinicio > date_object.hour and hfinal <= date_object.hour):
-                        cumple_filtros = False
-
-                    if finicio and finicio > date_object.date():
-                        cumple_filtros = False
-
-                    if ffinal and ffinal < date_object.date():
-                        cumple_filtros = False                    
-                    
-                    # Si cumple todos los filtros seleccionados, agregar el punto
-                    if cumple_filtros:
-                        if lrow[5] != 'None\n':
-                            c.append([float(lrow[5]),float(lrow[6].strip('\n')),lrow[0],lrow[2],lrow[3],lrow[4]])
-            file.close()
+            df = pd.read_csv('info.csv',sep=';',engine='python')
+            df_filtrado = df.copy()
+            df_filtrado['FECHA Y HORA'] = pd.to_datetime(df_filtrado['FECHA Y HORA'])
+            if ingreso:
+                df_filtrado = df_filtrado[df_filtrado['CANAL DE INGRESO'] == ingreso]
+            if cuadrante:
+                df_filtrado = df_filtrado[df_filtrado['CUADRANTE'] == cuadrante]
+            if categoria:
+                df_filtrado = df_filtrado[df_filtrado['CATEGORIA'] == categoria]
+            if tipo:
+                df_filtrado = df_filtrado[df_filtrado['TIPO DE PROCEDIMIENTO'].isin(tipo)]
+            if mes:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.month == mes]
+            if ano:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.year == ano]
+            if hinicio and hfinal and hinicio > hfinal:
+                df_filtrado = df_filtrado[(df_filtrado['FECHA Y HORA'].dt.hour >= hinicio) | (df_filtrado['FECHA Y HORA'].dt.hour < hfinal)]
+            if hinicio and hfinal and hinicio < hfinal:
+                df_filtrado = df_filtrado[(df_filtrado['FECHA Y HORA'].dt.hour >= hinicio) & (df_filtrado['FECHA Y HORA'].dt.hour < hfinal)]
+            if hinicio and not hfinal:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.hour >= hinicio]
+            if hfinal and not hinicio:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.hour < hfinal]
+            if finicio:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.date >= finicio]
+            if ffinal:
+                df_filtrado = df_filtrado[df_filtrado['FECHA Y HORA'].dt.date <= ffinal]
+            for index, row in df_filtrado.iterrows():
+                if len(str(row['COORDENADAS'])) > 3:
+                    cords = str(row['COORDENADAS']).split(',')
+                    c.append([cords[0],cords[1],row['FECHA Y HORA'],row['CATEGORIA'],row['TIPO DE PROCEDIMIENTO'],row['CUADRANTE']])
             st.session_state.mapa_data = c
             
         except FileNotFoundError:
