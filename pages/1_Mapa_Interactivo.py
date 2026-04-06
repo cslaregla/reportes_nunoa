@@ -8,12 +8,12 @@ from datetime import datetime
 
 st.set_page_config(page_title="Mapa Interactivo", layout="wide")
 
-st.title("📍 Mapa Interactivo Reportes Central Ñuñoa 2026")
+st.title("🗺️ Mapa Interactivo Reportes Central Ñuñoa 2026")
 # Título y botones en una fila
-col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    if st.button("Inicio", key="nav_home",width='stretch'):
+    if st.button("Inicio", key="nav_home", width='stretch'):
         st.switch_page("app.py")
 
 with col2:
@@ -28,6 +28,9 @@ with col4:
     if st.button("Tabla Interactiva", key="nav_tabla", width='stretch'):
         st.switch_page("pages/3_Tabla_Interactiva.py")
 
+with col5:
+    if st.button("Exportar Reportes", key="nav_report", width='stretch'):
+        st.switch_page("pages/4_Exportar_Reportes.py")
 st.markdown("---")
 
 # Inicializar session_state
