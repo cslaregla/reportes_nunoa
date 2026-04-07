@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import plotly.express as px
+import pytz
 import streamlit as st
 import time
 from datetime import datetime
@@ -260,7 +261,8 @@ fig_linea = px.line(
 )
 
 # ==================== EXPORTAR A PDF ====================
-
+local_tz = pytz.timezone("America/Santiago") 
+now_local = datetime.now(local_tz)
 st.markdown("---")
 st.subheader("📥 Descargar Reporte")
 
@@ -303,7 +305,7 @@ if st.button("📄 Generar PDF"):
             st.download_button(
                 label="📥 Descargar PDF",
                 data=pdf,
-                file_name=f"reporte_analisis{str(datetime.now().strftime('%Y%m%d%H%M%S'))}.pdf",
+                file_name=f"reporte_analisis{str(now_local.strftime('%Y%m%d%H%M%S'))}.pdf",
                 mime="application/pdf",
                 width='stretch'
             )
