@@ -39,6 +39,14 @@ dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
 dias_hist = ((dfr['FECHA Y HORA'].max() - dfr['FECHA Y HORA'].min()).days)+1
 prom_hist = round(len(dfr) / max(dias_hist, 1), 1)
 last_hist = dfr.iloc[-1]['FECHA Y HORA']
+##
+def is_time(time_str):
+    try:
+        datetime.strptime(str(time_str), '%H:%M')
+        return True
+    except ValueError:
+        return False
+##
 ## Agrego la opción de elegir un período ##
 col1, col2 = st.columns(2)
 with col1:
@@ -52,6 +60,7 @@ else:
     df = dfr.copy()
 st.markdown(f"*Última Actualización: {last_hist}")
 st.subheader(f"ℹ️ Métricas Principales")
+dias_cubiertos = ((df['FECHA Y HORA'].max() - df['FECHA Y HORA'].min()).days)+1
 met1, met2, met3, met4 = st.columns(4)
 with met1:
     st.metric("Número de Reportes",f"{df.shape[0]}")
@@ -70,10 +79,13 @@ with met5:
     fecha_metric = df['FECHA Y HORA'].dt.date.value_counts().index[0]
     st.metric("Día con más reportes",f"{fecha_metric}",delta=df['FECHA Y HORA'].dt.date.value_counts().iloc[0])
 with met6:
-    st.metric("Procedimientos",df['TIPO DE PROCEDIMIENTO'].nunique())
-with met7:
-    dias_cubiertos = ((df['FECHA Y HORA'].max() - df['FECHA Y HORA'].min()).days)+1
     st.metric("Días Cubiertos",dias_cubiertos)
+with met7:
+    dia_metric = df['FECHA Y HORA'].dt.day_name().value_counts().index[0]
+    dict_dias = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles','Thursday':'Jueves','Friday':'Viernes','Saturday':'Sábado','Sunday':'Domingo'}
+    dies = dict_dias[dia_metric]
+    st.metric("Día de la semana con más Reportes",dies,delta=f"{df['FECHA Y HORA'].dt.day_name().value_counts().iloc[0]}")
+
 with met8:
     promedio_diario = round(len(df) / max(dias_cubiertos, 1), 1)
     st.metric("Promedio Diario",f"{promedio_diario} reportes/día",delta=round((prom_hist-promedio_diario),1))
@@ -91,18 +103,15 @@ with met10:
         lugar_metric = df['LUGAR PÚBLICO /  PRIVADO'].value_counts().index[0]
         st.metric("Tipo de lugar más común",lugar_metric,delta=f"{df['LUGAR PÚBLICO /  PRIVADO'].value_counts().iloc[0]}")
 with met11:
-    dia_metric = df['FECHA Y HORA'].dt.day_name().value_counts().index[0]
-    dict_dias = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles','Thursday':'Jueves','Friday':'Viernes','Saturday':'Sábado','Sunday':'Domingo'}
-    dies = dict_dias[dia_metric]
-    st.metric("Día de la semana con más Reportes",dies,delta=f"{df['FECHA Y HORA'].dt.day_name().value_counts().iloc[0]}")
-##
-def is_time(time_str):
-    try:
-        datetime.strptime(str(time_str), '%H:%M')
-        return True
-    except ValueError:
-        return False
-##
+    dft = df[df['HORA DE ARRIBO'].apply(is_time) & df['HORA DE TERMINO'].apply(is_time)]
+    dft = dft[dft['HORA DE TERMINO'] > dft['HORA DE ARRIBO']]
+    dft['HORA DE ARRIBO'] = pd.to_timedelta(dft['HORA DE ARRIBO'] + ':00')
+    dft['HORA DE TERMINO'] = pd.to_timedelta(dft['HORA DE TERMINO'] + ':00')
+    dft['DIF'] = dft['HORA DE TERMINO'] - dft['HORA DE ARRIBO']
+    prom = str(dft['DIF'].mean())
+    promf = prom.split(' ')[2]
+    promf = promf.split('.')[0]
+    st.metric("Media Tiempo Arribo-Termino",promf)
 with met12:
     dft = df[df['HORA DE ASIGNACION A INSPECTOR'].apply(is_time) & df['HORA DE ARRIBO'].apply(is_time)]
     dft = dft[dft['HORA DE ARRIBO'] > dft['HORA DE ASIGNACION A INSPECTOR']]
@@ -113,18 +122,6 @@ with met12:
     promf = prom.split(' ')[2]
     promf = promf.split('.')[0]
     st.metric("Media Tiempo Asignación-Arribo",promf)
-
-met13, met14, met15, met16 = st.columns(4)
-with met13:
-    dft = df[df['HORA DE ARRIBO'].apply(is_time) & df['HORA DE TERMINO'].apply(is_time)]
-    dft = dft[dft['HORA DE TERMINO'] > dft['HORA DE ARRIBO']]
-    dft['HORA DE ARRIBO'] = pd.to_timedelta(dft['HORA DE ARRIBO'] + ':00')
-    dft['HORA DE TERMINO'] = pd.to_timedelta(dft['HORA DE TERMINO'] + ':00')
-    dft['DIF'] = dft['HORA DE TERMINO'] - dft['HORA DE ARRIBO']
-    prom = str(dft['DIF'].mean())
-    promf = prom.split(' ')[2]
-    promf = promf.split('.')[0]
-    st.metric("Media Tiempo Arribo-Termino",promf)
 
 ## COM FUNCIONES ##
 def get_rango_horario(hora):
@@ -175,16 +172,30 @@ def pie(filtro):
 ##
 def barra(filtro):
     if filtro == 'Día de la Semana':
-        counts = df["FECHA Y HORA"].dt.weekday.value_counts()
+        l1 = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
+        l2 = df["FECHA Y HORA"].dt.weekday.value_counts()
+        l2 = list(l2.sort_index())
+        fig_barras = px.bar(
+            x=l1,
+            y=l2,
+            title='Reportes por '+filtro
+        )
     elif filtro == 'Hora':
-        counts = df["FECHA Y HORA"].dt.hour.value_counts()
+        l1 = ['00:00-01:00','01:00-02:00','02:00-03:00','03:00-04:00','04:00-05:00','05:00-06:00','06:00-07:00','07:00-08:00','08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00','18:00-19:00','19:00-20:00','20:00-21:00','21:00-22:00','22:00-23:00','23:00-24:00']
+        l2 = df["FECHA Y HORA"].dt.hour.value_counts()
+        l2 = list(l2.sort_index())
+        fig_barras = px.bar(
+            x=l1,
+            y=l2,
+            title='Reportes por '+filtro
+        )
     elif filtro == 'CATEGORIA':
         counts = df["CATEGORIA"].value_counts()
+        fig_barras = px.bar(
+            counts,
+            title='Reportes por Categoría'
+        )
         filtro = filtro.title()
-    fig_barras = px.bar(
-        counts,
-        title='Reportes por '+filtro
-    )
     fig_barras.update_layout(
         xaxis_title=filtro,
         yaxis_title='Reportes'
@@ -287,6 +298,13 @@ df_semana = df.groupby('semana').size().reset_index(name='cantidad')
 fig = px.line(df_semana, x='semana', y='cantidad', 
               title='Tendencia Semanal', markers=True)
 st.plotly_chart(fig, width='stretch')
+
+## TABLA DE FRECUENCIA DE TODOS LOS PROCEDIMIENTOS ##
+st.markdown("### 📁 Desglose del Total de Procedimientos")
+a = df['TIPO DE PROCEDIMIENTO'].value_counts() .reset_index().rename(columns={'TIPO DE PROCEDIMIENTO': 'Tipo de Procedimiento', 'count': 'Frecuencia'})
+st.dataframe(a,width='stretch')
+##
+
 st.markdown("### 📅 Análisis Detallado")
 
 ## GRÁFICO X, XI ##
