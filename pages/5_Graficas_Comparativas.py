@@ -68,7 +68,7 @@ if st.button("Ver Gráfica Comparativa"):
             count = len(df[(df['TIPO DE PROCEDIMIENTO']== tipo) & (df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)])
             listanual.append(count)
         lista.append(listanual)
-    ## GRAPH ##
+    ## Genero la información ##
     lform = [tipos,lista[0],lista[1]]
     df2 = pd.DataFrame({
         "Tipo de Procedimiento":lform[0],
@@ -85,5 +85,46 @@ if st.button("Ver Gráfica Comparativa"):
                 y="Valor", 
                 color="Año",
                 barmode="group")
+    ## Gráfico de barra doble ##
     st.plotly_chart(fig,width='stretch')
+
+    ## Gráfico de multi-linea que muestra el avance temporal ##
+    for ano in anos:
+        #
+        rinicio = str(ano)+'-'+str(fcinicio)
+        rfinal = str(ano)+'-'+str(fcfinal)
+        rinicio = datetime.strptime(rinicio, "%Y-%m-%d")
+        rfinal = datetime.strptime(rfinal, "%Y-%m-%d")
+        rinicio = rinicio.date()
+        rfinal = rfinal.date()
+        df = dfr.copy()
+        df = df[(df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)]
+        ##
+        df["FECHA"] = df["FECHA Y HORA"].dt.date
+        ###########
+        fechas = pd.date_range(
+            df["FECHA"].min(),
+            df["FECHA"].max(),
+            freq="D"
+        )
+        index_completo = pd.MultiIndex.from_product(
+            [fechas, tipos],
+            names=["FECHA", "TIPO DE PROCEDIMIENTO"]
+        )
+        df_grouped = (
+            df.groupby(["FECHA", "TIPO DE PROCEDIMIENTO"])
+            .size()
+            .reindex(index_completo, fill_value=0)
+            .reset_index(name="CANTIDAD")
+        )
+        fig = px.line(
+            df_grouped,
+            x="FECHA",
+            y="CANTIDAD",
+            title=f"Evolución temporal {str(ano)}",
+            color="TIPO DE PROCEDIMIENTO"
+        )
+        ###########
+        st.plotly_chart(fig,width='stretch', key=f'{ano}')
+    ## Tabla que muestra lo mismo que el gráfico de barra ##
     st.dataframe(df2, width='stretch', hide_index=True)
