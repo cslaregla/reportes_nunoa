@@ -291,7 +291,14 @@ def barra(filtro):
     return fig_barras
 
 df['fecha'] = df['FECHA Y HORA'].dt.date
-df_linea = df.groupby('fecha').size().reset_index(name='cantidad')
+##
+fechas = pd.date_range(
+    df['fecha'].min(),
+    df['fecha'].max(),
+    freq="D"
+)
+#
+df_linea = df.groupby('fecha').size().asfreq("D", fill_value=0).reset_index(name='cantidad')
 df_linea['fecha'] = pd.to_datetime(df_linea['fecha'])
 df_linea = df_linea.sort_values('fecha')
 fig_linea = px.line(
