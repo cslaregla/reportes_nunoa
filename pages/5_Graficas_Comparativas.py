@@ -70,79 +70,86 @@ if finicio and ffinal:
     fcfinal = ffinal.strftime("%m-%d")
 
 if st.button("Ver Gráfica Comparativa"):
-    lista = []
-    for ano in anos:
-        listanual = []
-        for tipo in tipos:
+    if not any([tipos]):
+        st.error("Por favor selecciona al menos un tipo de procedimiento.")
+    if not any([finicio, ffinal]):
+        st.error("Por favor ingrese un rango de fechas.")
+    if finicio and ffinal and (finicio > ffinal):
+        st.error("Por favor ingrese un rango de fechas válido.")
+    else:
+        lista = []
+        for ano in anos:
+            listanual = []
+            for tipo in tipos:
+                rinicio = str(ano)+'-'+str(fcinicio)
+                rfinal = str(ano)+'-'+str(fcfinal)
+                rinicio = datetime.strptime(rinicio, "%Y-%m-%d")
+                rfinal = datetime.strptime(rfinal, "%Y-%m-%d")
+                rinicio = rinicio.date()
+                rfinal = rfinal.date()
+                if categoria:
+                    count = len(df[(df['CATEGORIA'] == categoria) & (df['TIPO DE PROCEDIMIENTO']== tipo) & (df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)])            
+                else:
+                    count = len(df[(df['TIPO DE PROCEDIMIENTO']== tipo) & (df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)])
+                listanual.append(count)
+            lista.append(listanual)
+        ## Genero la información ##
+        lform = [tipos,lista[0],lista[1]]
+        df2 = pd.DataFrame({
+            "Tipo de Procedimiento":lform[0],
+            "2025":lform[1],
+            "2026":lform[2]
+        })
+
+        df_melt = df2.melt(id_vars="Tipo de Procedimiento", 
+                        var_name="Año", 
+                        value_name="Valor")
+
+        fig = px.bar(df_melt, 
+                    x="Tipo de Procedimiento", 
+                    y="Valor", 
+                    color="Año",
+                    barmode="group")
+        ## Gráfico de barra doble ##
+        st.plotly_chart(fig,width='stretch')
+
+        ## Gráfico de multi-linea que muestra el avance temporal ##
+        for ano in anos:
+            #
             rinicio = str(ano)+'-'+str(fcinicio)
             rfinal = str(ano)+'-'+str(fcfinal)
             rinicio = datetime.strptime(rinicio, "%Y-%m-%d")
             rfinal = datetime.strptime(rfinal, "%Y-%m-%d")
             rinicio = rinicio.date()
             rfinal = rfinal.date()
-            if categoria:
-                count = len(df[(df['CATEGORIA'] == categoria) & (df['TIPO DE PROCEDIMIENTO']== tipo) & (df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)])            
-            else:
-                count = len(df[(df['TIPO DE PROCEDIMIENTO']== tipo) & (df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)])
-            listanual.append(count)
-        lista.append(listanual)
-    ## Genero la información ##
-    lform = [tipos,lista[0],lista[1]]
-    df2 = pd.DataFrame({
-        "Tipo de Procedimiento":lform[0],
-        "2025":lform[1],
-        "2026":lform[2]
-    })
-
-    df_melt = df2.melt(id_vars="Tipo de Procedimiento", 
-                    var_name="Año", 
-                    value_name="Valor")
-
-    fig = px.bar(df_melt, 
-                x="Tipo de Procedimiento", 
-                y="Valor", 
-                color="Año",
-                barmode="group")
-    ## Gráfico de barra doble ##
-    st.plotly_chart(fig,width='stretch')
-
-    ## Gráfico de multi-linea que muestra el avance temporal ##
-    for ano in anos:
-        #
-        rinicio = str(ano)+'-'+str(fcinicio)
-        rfinal = str(ano)+'-'+str(fcfinal)
-        rinicio = datetime.strptime(rinicio, "%Y-%m-%d")
-        rfinal = datetime.strptime(rfinal, "%Y-%m-%d")
-        rinicio = rinicio.date()
-        rfinal = rfinal.date()
-        df = dfr.copy()
-        df = df[(df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)]
-        ##
-        df["FECHA"] = df["FECHA Y HORA"].dt.date
-        ###########
-        fechas = pd.date_range(
-            df["FECHA"].min(),
-            df["FECHA"].max(),
-            freq="D"
-        )
-        index_completo = pd.MultiIndex.from_product(
-            [fechas, tipos],
-            names=["FECHA", "TIPO DE PROCEDIMIENTO"]
-        )
-        df_grouped = (
-            df.groupby(["FECHA", "TIPO DE PROCEDIMIENTO"])
-            .size()
-            .reindex(index_completo, fill_value=0)
-            .reset_index(name="CANTIDAD")
-        )
-        fig = px.line(
-            df_grouped,
-            x="FECHA",
-            y="CANTIDAD",
-            title=f"Evolución temporal {str(ano)}",
-            color="TIPO DE PROCEDIMIENTO"
-        )
-        ###########
-        st.plotly_chart(fig,width='stretch', key=f'{ano}')
-    ## Tabla que muestra lo mismo que el gráfico de barra ##
-    st.dataframe(df2, width='stretch', hide_index=True)
+            df = dfr.copy()
+            df = df[(df['FECHA Y HORA'].dt.year == ano) & (df['FECHA Y HORA'].dt.date >= rinicio) & (df['FECHA Y HORA'].dt.date <= rfinal)]
+            ##
+            df["FECHA"] = df["FECHA Y HORA"].dt.date
+            ###########
+            fechas = pd.date_range(
+                df["FECHA"].min(),
+                df["FECHA"].max(),
+                freq="D"
+            )
+            index_completo = pd.MultiIndex.from_product(
+                [fechas, tipos],
+                names=["FECHA", "TIPO DE PROCEDIMIENTO"]
+            )
+            df_grouped = (
+                df.groupby(["FECHA", "TIPO DE PROCEDIMIENTO"])
+                .size()
+                .reindex(index_completo, fill_value=0)
+                .reset_index(name="CANTIDAD")
+            )
+            fig = px.line(
+                df_grouped,
+                x="FECHA",
+                y="CANTIDAD",
+                title=f"Evolución temporal {str(ano)}",
+                color="TIPO DE PROCEDIMIENTO"
+            )
+            ###########
+            st.plotly_chart(fig,width='stretch', key=f'{ano}')
+        ## Tabla que muestra lo mismo que el gráfico de barra ##
+        st.dataframe(df2, width='stretch', hide_index=True)
