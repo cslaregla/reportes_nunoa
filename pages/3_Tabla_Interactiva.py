@@ -5,7 +5,11 @@ import pandas as pd
 st.set_page_config(page_title="Tabla Interactiva", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
 st.title("🗃️ Tablas Reportes Central Ñuñoa 2026")
-
+##### VALIDACIÓN USUARIO #####
+from auth import check_auth
+if not check_auth():
+    st.stop()
+##############################
 # Título y botones en una fila
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 

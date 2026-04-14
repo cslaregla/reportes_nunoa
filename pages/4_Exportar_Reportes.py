@@ -19,7 +19,11 @@ pio.defaults.default_format = "png"
 st.set_page_config(page_title="Generación de Informe", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
 st.title("📝 Generación de Informe Reportes Central Ñuñoa 2026")
-
+##### VALIDACIÓN USUARIO #####
+from auth import check_auth
+if not check_auth():
+    st.stop()
+##############################
 # Título y botones en una fila
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
