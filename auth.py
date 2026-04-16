@@ -1,5 +1,7 @@
 import streamlit as st
 
+## Implementación de una verificación simple para acceder a la aplicación ##
+
 def check_auth():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False

@@ -12,7 +12,6 @@ df = pd.read_csv(new_file+'.csv',sep=';',engine='python')
 # df = df.dropna(axis=0,how='all')
 # df = df.dropna(axis=1,how='all')
 
-
 ## Creo funciones que corrigen los errores ##
 def is_time(time_str):
     try:
@@ -20,10 +19,12 @@ def is_time(time_str):
         return True
     except ValueError:
         return False
+    
 def fcalle(valor):
     if valor == 'Seguridad':
         return ''
     return str(valor).title()
+
 def fcuadrante(valor):
     if valor == '118':
         return 'Nro. 118'
@@ -48,6 +49,7 @@ def fcuadrante(valor):
     elif valor == 'NO APLICA ':
         return 'No aplica'
     return valor
+
 def fcanalingreso(valor):
     if valor == 'VECINO':
         return 'VECINO/A'
@@ -70,6 +72,7 @@ def fcanalingreso(valor):
     elif valor == 'Otros':
         return 'OTROS'
     return valor
+
 ## Para verificar que todo el archivo tenga la misma estructua, comparo los campos del nuevo archivo con los del actual ##
 # campos = list(df.columns)
 # campos_final = ['NRO','ID ASIGNADO /TICKET','FECHA Y HORA','OPERADOR','CANAL DE INGRESO','TIPO DE RECURRENTE','AREA O SECCIÓN DEL RECURRENTE','NOMBRE DE RECURRENTE','TELEFONO RECURRENTE','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)','CATEGORIA','TIPO DE PROCEDIMIENTO','CALLE','NUMERACIÓN','CALLE QUE INTERSECTA','LUGAR PÚBLICO /  PRIVADO','ACLARATORIA DE LA UBICACIÓN','CUADRANTE','RADIOPERADOR DE TURNO','NRO DE MOVIL','INSPECTOR ASIGNADO AL PROCEDIMIENTO','ESTADO DEL PROCEDIMIENTO','HORA DE ASIGNACION A INSPECTOR','HORA DE ARRIBO','HORA DE TERMINO','INFORME','FINALIZACIÓN','APOYO/ASISTENCIA','COMISARIA','SEREMI','DERIVACIÓN A OTRA COMUNA',"OBSERVACIONES , DATOS GENERALES , ADICIONALES",'CONNOTACIÓN','COORDENADAS']
@@ -80,7 +83,7 @@ def fcanalingreso(valor):
 ## Le doy el orden correcto ##
 df = df[['NRO','ID ASIGNADO /TICKET','FECHA Y HORA','OPERADOR','CANAL DE INGRESO','TIPO DE RECURRENTE','AREA O SECCIÓN DEL RECURRENTE','NOMBRE DE RECURRENTE','TELEFONO RECURRENTE','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)','CATEGORIA','TIPO DE PROCEDIMIENTO','CALLE','NUMERACIÓN','CALLE QUE INTERSECTA','LUGAR PÚBLICO /  PRIVADO','ACLARATORIA DE LA UBICACIÓN','CUADRANTE','RADIOPERADOR DE TURNO','NRO DE MOVIL','INSPECTOR ASIGNADO AL PROCEDIMIENTO','ESTADO DEL PROCEDIMIENTO','HORA DE ASIGNACION A INSPECTOR','HORA DE ARRIBO','HORA DE TERMINO','INFORME','FINALIZACIÓN','APOYO/ASISTENCIA','COMISARIA','SEREMI','DERIVACIÓN A OTRA COMUNA',"OBSERVACIONES , DATOS GENERALES , ADICIONALES",'CONNOTACIÓN','COORDENADAS']]
 
-## Aplico las funciones al nuevo archivo ##
+## Aplico las funciones al nuevo archivo (En caso de ser necesario)##
 # df['CUADRANTE'] = df['CUADRANTE'].apply(fcuadrante)
 # df['CANAL DE INGRESO'] = df['CANAL DE INGRESO'].apply(fcanalingreso)
 #df['CALLE'] = df['CALLE'].apply(fcalle)

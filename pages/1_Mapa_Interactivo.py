@@ -6,16 +6,17 @@ from shapely.geometry import Point, Polygon
 from folium.plugins import HeatMap
 from datetime import datetime
 
+## Configuración inicial aplicación ##
 st.set_page_config(page_title="Mapa Interactivo", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
-
 st.title("🗺️ Mapa Interactivo Reportes Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
-# Título y botones en una fila
+
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -43,7 +44,7 @@ with col6:
         st.switch_page("pages/5_Graficas_Comparativas.py")
 st.markdown("---")
 
-# Inicializar session_state
+## Inicio sesión (relativo al mapa) ##
 if 'mostrar_mapa' not in st.session_state:
     st.session_state.mostrar_mapa = False
 if 'cuadrante_filtro' not in st.session_state:
@@ -51,8 +52,8 @@ if 'cuadrante_filtro' not in st.session_state:
 if 'mapa_data' not in st.session_state:
     st.session_state.mapa_data = []
 
+## Enlisto los filtros ##
 st.subheader("Filtros")
-##
 op_ingreso = ['1445', 'EXTERNO','INTERNO','JEFATURA','OPERADOR CÁMARAS','PROALERT','SOSAFE','OTROS', 'VECINO/A']
 op_cuadrantes = ['Nro. 118','Nro. 119','Nro. 120','Nro. 121','Nro. 129','Nro. 130','Nro. 131','Nro. 132','Nro. 133','No aplica']
 dop_categoria ={'Seguridad':['Servicio DRONE','Apoyo a Carabineros','Actividad sospechosa','Agresión','Alarma activada','Amenazas','Artefacto explosivo o paquete sospechoso','Daños propiedad privada','Daños propiedad pública','Delito sexual','Detención ciudadana','Detenidos','Disparos','Disturbios','Fuegos artificiales','Homicidio','Homicidio Frustrado','Hurto','Maltrato animal','Marchas/manifestaciones','Persona extraviada / desorientada','Posible sospechoso al interior','Riña','Robo con intimidación','Robo con violencia','Robo de especies de o desde vehículo','Robo de vehículo en BNUP','Robo en BNUP','Robo en lugar habitado','Robo en lugar no habitado','Robo frustrado','Robo por sorpresa','Toma establecimiento educacional','Trafico Drogas','Vehículo con encargo','Vehiculo sospechoso','Incumplimiento medida cautelar','VIF','Vulneración derechos adultos mayores','Vulneración NNA','Otros','Motochorros '],
@@ -67,13 +68,12 @@ op_hinicio = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:
 op_hfinal = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:00',7:'07:00',8:'08:00',9:'09:00',10:'10:00',11:'11:00',12:'12:00',13:'13:00',14:'14:00',15:'15:00',16:'16:00',17:'17:00',18:'18:00',19:'19:00',20:'20:00',21:'21:00',22:'22:00',23:'23:00', 24:'24:00'}
 op_mes = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'}
 op_ano = [2020,2021,2022,2023,2024,2025,2026]
-##
 opi_hinicio = list(op_hinicio.items())
 opi_hfinal = list(op_hfinal.items())
 opi_mes = list(op_mes.items())
 col1, col2, col3, col4, col5 = st.columns(5)
 col6, col7, col8, col9, col10 = st.columns(5)
-##
+
 with col1:
     ingreso = st.selectbox("Vía de Ingreso", op_ingreso, index=None,placeholder='Elige')
 with col2:
@@ -110,27 +110,28 @@ with col9:
     finicio = st.date_input("Desde", value=None)
 with col10:
     ffinal = st.date_input("Hasta", value=None)
-######
 col11, col12, col13, col14, col15 = st.columns(5)
 with col11:
     calle = st.text_input("Calle",'',placeholder="Elige")
 with col12:
     palabra = st.text_input("Palabra Clave",'',placeholder="Elige")
-######
 
+## Creo el botón que activa todo el flujo del mapa de calor ##
 if st.button("Visualizar Mapa"):
 
-    # Verificar si al menos un filtro está seleccionado
+    ## Verifico que haya al menos un filtro seleccionado ##
     if not any([ingreso, cuadrante, categoria, tipo, hinicio, hfinal, mes, ano, finicio, ffinal, calle, palabra]):
         st.error("Por favor selecciona al menos un filtro")
     else:
         st.session_state.mostrar_mapa = True
-        # Procesar datos
+        ## Procesar datos ##
+        ## c es la lista que incluirá todos los puntos seleccionados ##
         c = []
         try:
             df = pd.read_csv('info.csv',sep=';',engine='python')
             df_filtrado = df.copy()
             df_filtrado['FECHA Y HORA'] = pd.to_datetime(df_filtrado['FECHA Y HORA'])
+            ## Filtro la base de datos ##
             if ingreso:
                 df_filtrado = df_filtrado[df_filtrado['CANAL DE INGRESO'] == ingreso]
             if cuadrante:
@@ -160,6 +161,7 @@ if st.button("Visualizar Mapa"):
             if palabra:
                 df_filtrado = df_filtrado[df_filtrado['INFORME'].str.contains(palabra, case=False, na=False) | df_filtrado['DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)'].str.contains(palabra, case=False, na=False)]
 
+            ## Añado por cada entrada las coordenadas del punto y otra información relevante ##
             for index, row in df_filtrado.iterrows():
                 if len(str(row['COORDENADAS'])) > 3:
                     cords = str(row['COORDENADAS']).split(',')
@@ -169,27 +171,25 @@ if st.button("Visualizar Mapa"):
         except FileNotFoundError:
             st.error("No se encontró el archivo con la información")
 
-# Mostrar mapa si se aplicó el filtro
+## Muestro el mapa si se aplicó el filtro ##
 if st.session_state.mostrar_mapa:
     st.subheader("Instrucciones")
     st.info("💡 Dibuja un círculo o rectángulo en el mapa para contar los puntos dentro.")
     
     
-    # Opción para mostrar/ocultar heatmap
+    ## Mostrar/ocultar mapa de calor ##
     st.subheader("Opciones")
     mostrar_heatmap = st.checkbox("Mostrar Heatmap", value=True)
     
-    # Crear mapa
+    ## Creo el mapa ##
     m = folium.Map(
         location=[-33.45588734763029, -70.5937367619373],
         zoom_start=13
     )
 
 
-    # Preparar datos para heatmap
+    ## Preparo la información para el mapa de calor ##
     heat_data = [[element[0], element[1]] for element in st.session_state.mapa_data]
-    
-    # Agregar heatmap si está activado
     if mostrar_heatmap and len(heat_data) > 0:
         custom_gradient = {
             0.4: 'green',
@@ -198,7 +198,7 @@ if st.session_state.mostrar_mapa:
         }
         HeatMap(heat_data, gradient=custom_gradient,radius=20, blur=15, max_zoom=1).add_to(m)
     
-    # Agregar marcadores con CircleMarker
+    ## Agrego los marcadores de los puntos seleccionados ##
     for element in st.session_state.mapa_data:
         folium.CircleMarker(
             location=[element[0], element[1]],
@@ -210,6 +210,7 @@ if st.session_state.mostrar_mapa:
             fillOpacity=0.7,
             weight=1
         ).add_to(m)
+
     ## Defino los cuadrantes como polígonos y los agrego al mapa ##
     c118 = [[-33.449669,-70.600419], [-33.448523,-70.593123], [-33.44795,-70.571537], [-33.453465,-70.570679], [-33.458979,-70.572309], [-33.454503,-70.580034], [-33.454718,-70.582824], [-33.455541,-70.586472], [-33.454646,-70.59999], [-33.449669,-70.600419]]
     c119 = [[-33.454682,-70.599775], [-33.455613,-70.587158], [-33.454897,-70.583038], [-33.454467,-70.580034], [-33.457904,-70.574799], [-33.458979,-70.572267], [-33.46954,-70.576601], [-33.473406,-70.58454], [-33.474086,-70.588918], [-33.473728,-70.592093], [-33.472261,-70.592051], [-33.470578,-70.589561], [-33.459551,-70.586772], [-33.459014,-70.599904], [-33.454682,-70.599775]]
@@ -220,7 +221,6 @@ if st.session_state.mostrar_mapa:
     c131 = [[-33.461682,-70.615], [-33.462263,-70.606202], [-33.462523,-70.604872], [-33.464313,-70.601481], [-33.464582,-70.600312], [-33.470829,-70.600634], [-33.470918,-70.600934], [-33.471079,-70.601192], [-33.473782,-70.601234], [-33.474462,-70.613594], [-33.467643,-70.61398], [-33.465656,-70.614946], [-33.462604,-70.61516], [-33.461682,-70.615]]
     c132 = [[-33.455501,-70.629838], [-33.455201,-70.62847], [-33.455161,-70.627949], [-33.455273,-70.627445], [-33.461091,-70.625814], [-33.461673,-70.625106], [-33.460912,-70.624269], [-33.4611,-70.62193], [-33.460849,-70.621415], [-33.461234,-70.620975], [-33.461655,-70.615042], [-33.462639,-70.615096], [-33.465575,-70.614914], [-33.46766,-70.61398], [-33.474453,-70.613605], [-33.474928,-70.623014], [-33.470077,-70.624323], [-33.468931,-70.625954], [-33.455501,-70.629838]]
     c133 = [[-33.447941,-70.622252], [-33.447243,-70.618776], [-33.448362,-70.618411], [-33.447548,-70.613744], [-33.453277,-70.612457], [-33.453196,-70.613594], [-33.46084,-70.614731], [-33.460778,-70.615289], [-33.461324,-70.61501], [-33.461691,-70.61501], [-33.46127,-70.620965], [-33.460876,-70.621383], [-33.460626,-70.621051], [-33.453483,-70.620632], [-33.447941,-70.622252]]
-    lcuad = [c118,c119,c120,c121,c129,c130,c131,c132,c133]
     ldcuad = {"118":c118,"119":c119,"120":c120,"121":c121,"129":c129,"130":c130,"131":c131,"132":c132,"133":c133}
     for element in ldcuad:
         folium.Polygon(
@@ -230,6 +230,8 @@ if st.session_state.mostrar_mapa:
             opacity = 0.5,
             fill_color="black"
             ).add_to(m)
+    
+    ## Añado leyenda con nombre de cuadrante en cada polígono ##
     for element in ldcuad:
         centro_lat = sum([coord[0] for coord in ldcuad[element]]) / len(ldcuad[element])
         centro_lng = sum([coord[1] for coord in ldcuad[element]]) / len(ldcuad[element])
@@ -239,7 +241,8 @@ if st.session_state.mostrar_mapa:
                 <div style="font-size: 20px;color: blue; font-weight: bold;">{element}</div>
             ''')
             ).add_to(m)
-    ## Agregar herramienta de dibujo ##
+        
+    ## Agrego herramienta de dibujo ##
     from folium.plugins import Draw
     Draw(export=False).add_to(m)
     
@@ -250,12 +253,12 @@ if st.session_state.mostrar_mapa:
     st.success(f"✅ Total de puntos: {len(st.session_state.mapa_data)}")
     
     
-    ## PROCESAR TODAS LAS FORMAS DIBUJADAS
+    ## Proceso todas las formas dibujadas ##
     if map_data and map_data.get('all_drawings'):
         for idx, drawing in enumerate(map_data['all_drawings']):
             geom_type = drawing['geometry']['type']
             
-            # CÍRCULO
+            ## Círculo ##
             if geom_type == 'Point' and 'radius' in drawing['properties']:
                 st.markdown("---")
                 st.subheader(f"📊 Análisis de Círculo #{idx + 1}")
@@ -275,6 +278,7 @@ if st.session_state.mostrar_mapa:
                 with col2:
                     st.metric("Puntos fuera", len(st.session_state.mapa_data) - len(puntos_dentro))
                 
+                ## Creo tablas con la información de los puntos dentro de la figura ##
                 if puntos_dentro:
                     st.subheader("Puntos dentro del círculo")
                     df_puntos = pd.DataFrame(puntos_dentro)
@@ -286,7 +290,7 @@ if st.session_state.mostrar_mapa:
                     conteo_tipos.columns = ['Tipo de procedimiento', 'Frecuencia']
                     st.dataframe(conteo_tipos, width='stretch', hide_index=True)
             
-            # RECTÁNGULO O POLÍGONO
+            ## Rectángulo o polígono ##
             elif geom_type == 'Polygon':
                 st.markdown("---")
                 st.subheader(f"📊 Análisis de Rectángulo #{idx + 1}")
@@ -306,6 +310,7 @@ if st.session_state.mostrar_mapa:
                 with col2:
                     st.metric("Puntos fuera", len(st.session_state.mapa_data) - len(puntos_dentro))
                 
+                ## Creo tablas con la información de los puntos dentro de la figura ##
                 if puntos_dentro:
                     st.subheader("Puntos dentro del rectángulo")
                     df_puntos = pd.DataFrame(puntos_dentro)

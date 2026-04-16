@@ -2,15 +2,17 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 
+## Configuración inicial aplicación ##
 st.set_page_config(page_title="Tabla Interactiva", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
 st.title("🗃️ Tablas Reportes Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
-# Título y botones en una fila
+
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -38,8 +40,8 @@ with col6:
         st.switch_page("pages/5_Graficas_Comparativas.py")
 st.markdown("---")
 
+## Enlisto los filtros ##
 st.subheader("Filtros")
-##
 op_ingreso = ['1445', 'EXTERNO','INTERNO','JEFATURA','OPERADOR CÁMARAS','PROALERT','SOSAFE','OTROS', 'VECINO/A']
 op_cuadrantes = ['Nro. 118','Nro. 119','Nro. 120','Nro. 121','Nro. 129','Nro. 130','Nro. 131','Nro. 132','Nro. 133','No aplica']
 dop_categoria ={'Seguridad':['Servicio DRONE','Apoyo a Carabineros','Actividad sospechosa','Agresión','Alarma activada','Amenazas','Artefacto explosivo o paquete sospechoso','Daños propiedad privada','Daños propiedad pública','Delito sexual','Detención ciudadana','Detenidos','Disparos','Disturbios','Fuegos artificiales','Homicidio','Homicidio Frustrado','Hurto','Maltrato animal','Marchas/manifestaciones','Persona extraviada / desorientada','Posible sospechoso al interior','Riña','Robo con intimidación','Robo con violencia','Robo de especies de o desde vehículo','Robo de vehículo en BNUP','Robo en BNUP','Robo en lugar habitado','Robo en lugar no habitado','Robo frustrado','Robo por sorpresa','Toma establecimiento educacional','Trafico Drogas','Vehículo con encargo','Vehiculo sospechoso','Incumplimiento medida cautelar','VIF','Vulneración derechos adultos mayores','Vulneración NNA','Otros','Motochorros '],
@@ -54,7 +56,6 @@ op_hinicio = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:
 op_hfinal = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:00',7:'07:00',8:'08:00',9:'09:00',10:'10:00',11:'11:00',12:'12:00',13:'13:00',14:'14:00',15:'15:00',16:'16:00',17:'17:00',18:'18:00',19:'19:00',20:'20:00',21:'21:00',22:'22:00',23:'23:00', 24:'24:00'}
 op_mes = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'}
 op_ano = [2020,2021,2022,2023,2024,2025,2026]
-##
 opi_hinicio = list(op_hinicio.items())
 opi_hfinal = list(op_hfinal.items())
 opi_mes = list(op_mes.items())
@@ -96,21 +97,18 @@ with col9:
     finicio = st.date_input("Desde", value=None)
 with col10:
     ffinal = st.date_input("Hasta", value=None)
-######
 col11, col12, col13, col14, col15 = st.columns(5)
 with col11:
     calle = st.text_input("Calle",'',placeholder="Elige")
 with col12:
     palabra = st.text_input("Palabra Clave",'',placeholder="Elige")
-######
 
 ## Cargo el archivo .csv ##
 df = pd.read_csv('info.csv', sep=';', engine='python')
-###########################
-#df = df.dropna(subset=['ID ASIGNADO /TICKET'])
 df_filtrado = df.copy()
 df_filtrado['FECHA Y HORA'] = pd.to_datetime(df_filtrado['FECHA Y HORA'])
 
+## Filtro la base de datos ##
 if ingreso:
     df_filtrado = df_filtrado[df_filtrado['CANAL DE INGRESO'] == ingreso]
 if cuadrante:
@@ -139,6 +137,8 @@ if calle:
     df_filtrado = df_filtrado[df_filtrado['CALLE'].str.contains(calle, case=False, na=False) | df_filtrado['CALLE QUE INTERSECTA'].str.contains(calle, case=False, na=False)]
 if palabra:
     df_filtrado = df_filtrado[df_filtrado['INFORME'].str.contains(palabra, case=False, na=False) | df_filtrado['DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)'].str.contains(palabra, case=False, na=False)]
+
+## Muestro el resultado en una tabla ##
 st.subheader("Resultados")
 st.write(f"Total de registros: {len(df_filtrado)}")
 st.dataframe(df_filtrado[df_filtrado.columns[2:26]], width='stretch')

@@ -1,5 +1,8 @@
 import streamlit as st
+
 ## Configuración inicial aplicación ##
+## El logo es el archivo logo.png ubicado en la misma carpeta que este archivo ##
+## En caso de querer cambiar el logo, ubicar en esta carpeta un archivo png con el mismo nombre y borrar el antiguo ##
 st.set_page_config(
     page_title="Inicio",
     page_icon="./logo.png",
@@ -7,25 +10,14 @@ st.set_page_config(
     layout="wide"
 )
 st.logo("./logo.png",size='large',icon_image="./logo.png")
-## ESTO ES PARA ESCONDER PARTE DEL HEADER, POR AHORA QUEDA COMENTADO ##
-# hide_streamlit_style = """
-# <style>
-# [data-testid="stToolbar"] {
-#     visibility: hidden;
-# }
-# footer {visibility: hidden;}
-# </style>
-# """
-# st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-##
 st.title("ℹ️ Reportes Procedimientos Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
 
-# Título y botones en una fila
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -51,16 +43,16 @@ with col5:
 with col6:
     if st.button("Gráficas Comparativas", key='nav_comp', width='stretch'):
         st.switch_page("pages/5_Graficas_Comparativas.py")
-st.markdown("---")
 
-st.header("Bienvenido")
+## Descripción general de la aplicación ##
+st.markdown("---")
+st.header("Bienvenido, esta herramienta permite:")
 st.write("""
-Esta herramienta permite:
-- 🗺️ Visualizar datos en un mapa interactivo
-- 📈 Analizar datos a través de gráficas
-- 🗃️ Explorar y filtrar datos en una tabla interactiva
-- 📝 Generar informes personalizados y estandarizados
-- ⚖️ Comparar información por período de tiempo
+- 🗺️ Visualizar reportes georeferenciados en un mapa de calor
+- 📈 Analizar datos a través de gráficas y métricas
+- 🗃️ Búsquedas personalizadas por filtros en tabla de datos
+- 📝 Generar informes estandarizados y automatizados
+- ⚖️ Comparar tipos de procedimientos por período de tiempo
 
 Selecciona una opción en el menú para comenzar.
 """)

@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import plotly.express as px
+import plotly.io as pio
 import pytz
 import streamlit as st
 import time
@@ -12,19 +13,21 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
-##
-import plotly.io as pio
+
+## Para insertar imágenes en el informe ##
 pio.defaults.default_format = "png"
-##
+
+## Configuración inicial aplicación ##
 st.set_page_config(page_title="Generación de Informe", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
 st.title("📝 Generación de Informe Reportes Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
-# Título y botones en una fila
+
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -55,7 +58,8 @@ st.markdown("---")
 st.subheader("Instrucciones de Uso:")
 st.markdown(f" 1. Elegir rango de fechas. En caso contrario, se elegirá el total del archivo.\n 2. Seleccionar* variables del reporte (Canal de Ingreso, Cuadrante, Categoría, Tipo de Procedimiento, Palabra Clave, Calle).\n 3. Seleccionar* variables de diseño (Título, Autor).")
 st.markdown("*Todas las variables son opcionales. Se incluye un título y autor pre-definido por defecto.")
-##
+
+## Filtros de fecha ##
 fec1, fec2 = st.columns(2)
 dfr = pd.read_csv('info.csv',sep=';',engine='python',encoding='utf-8')
 dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
@@ -73,8 +77,8 @@ else:
     df = dfr.copy()
     finicio = str(df['FECHA Y HORA'].min()).split(' ')[0]
     ffinal = str(df['FECHA Y HORA'].max()).split(' ')[0]
-##
-##
+
+## Resto de filtros ##
 op_ingreso = ['1445', 'EXTERNO','INTERNO','JEFATURA','OPERADOR CÁMARAS','PROALERT','SOSAFE','OTROS', 'VECINO/A']
 op_cuadrantes = ['Nro. 118','Nro. 119','Nro. 120','Nro. 121','Nro. 129','Nro. 130','Nro. 131','Nro. 132','Nro. 133','No aplica']
 dop_categoria ={'Seguridad':['Servicio DRONE','Apoyo a Carabineros','Actividad sospechosa','Agresión','Alarma activada','Amenazas','Artefacto explosivo o paquete sospechoso','Daños propiedad privada','Daños propiedad pública','Delito sexual','Detención ciudadana','Detenidos','Disparos','Disturbios','Fuegos artificiales','Homicidio','Homicidio Frustrado','Hurto','Maltrato animal','Marchas/manifestaciones','Persona extraviada / desorientada','Posible sospechoso al interior','Riña','Robo con intimidación','Robo con violencia','Robo de especies de o desde vehículo','Robo de vehículo en BNUP','Robo en BNUP','Robo en lugar habitado','Robo en lugar no habitado','Robo frustrado','Robo por sorpresa','Toma establecimiento educacional','Trafico Drogas','Vehículo con encargo','Vehiculo sospechoso','Incumplimiento medida cautelar','VIF','Vulneración derechos adultos mayores','Vulneración NNA','Otros','Motochorros '],
@@ -91,7 +95,6 @@ op_mes = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio'
 op_ano = [2020,2021,2022,2023,2024,2025,2026]
 op_autor = ['Favio Jadrievic', 'Lionel Messi', 'Neil Armstrong', 'Henry James']
 op_formato = ['Mostrar Descripción', 'Mostrar Informe', 'Mostrar Descripción e Informe']
-##
 opi_hinicio = list(op_hinicio.items())
 opi_hfinal = list(op_hfinal.items())
 opi_mes = list(op_mes.items())
@@ -133,25 +136,17 @@ if calle:
     df = df[df['CALLE'].str.contains(calle, case=False, na=False) | df['CALLE QUE INTERSECTA'].str.contains(calle, case=False, na=False)]
 if palabra:
     df = df[df['INFORME'].str.contains(palabra, case=False, na=False) | df['DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)'].str.contains(palabra, case=False, na=False)]
-## CHECK LEN ##
-##### GRAN FUNCION #####
+
+## Función que crea el reporte en formato .pdf ##
 def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tablas_dict):
-    """
-    Crea un PDF con gráficos y tablas
-    
-    Args:
-        titulo: Título del reporte
-        metricas: Dict con {nombre: valor}
-        graficos_dict: Dict con {nombre: figura_plotly}
-        tablas_dict: Dict con {nombre: dataframe}
-    """
-    
+
+    ## Inicializo el pdf. Aquí están las variables del archivo (revisar) ##
     pdf_buffer = io.BytesIO()
     doc = SimpleDocTemplate(pdf_buffer, title='Reporte Ñuñoa',pagesize=landscape(letter), topMargin=0.5*inch, bottomMargin=0.5*inch)
     elements = []
     styles = getSampleStyleSheet()
     
-    # Estilo personalizado para título
+    ## Estilo del título ##
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
@@ -160,23 +155,23 @@ def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tabl
         spaceAfter=20,
         alignment=TA_CENTER
     )
-    
-    # Título
     elements.append(Paragraph(titulo, title_style))
-    ## IMAGEN ##
-    img = Image("./logo.png", width=1.5*inch, height=1.5*inch)  # Ajusta ancho y alto
+    
+    ## Inserto imagen ##
+    img = Image("./logo.png", width=1.5*inch, height=1.5*inch)
     elements.append(img)
     elements.append(Spacer(1, 0.2*inch))
-    ############
+
+    ## Otros portada ##
     elements.append(Paragraph(f"Autor: {autor}", styles['Heading2']))
     elements.append(Paragraph(f"Fecha: {str(now_local.strftime('%Y-%m-%d'))}", styles['Heading2']))
     elements.append(Spacer(1, 0.1*inch))
-    # SECCIÓN: MÉTRICAS
+    
+    ## Métricas ##
     if metricas:
         elements.append(Paragraph("Métricas Principales", styles['Heading2']))
         elements.append(Spacer(1, 0.1*inch))
         
-        # Crear tabla de métricas
         data = [['Métrica', 'Valor']]
         for nombre, valor in metricas.items():
             data.append([nombre, str(valor)])
@@ -196,22 +191,19 @@ def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tabl
         elements.append(table)
         elements.append(PageBreak())
     
-    # SECCIÓN: GRÁFICOS
+    ## Gráficos ##
     if graficos_dict:
         elements.append(Paragraph("Gráficos", styles['Heading2']))
         elements.append(Spacer(1, 0.2*inch))
         
         for nombre_grafico, fig in graficos_dict.items():
             try:
-                # Convertir gráfico a imagen PNG
                 img_bytes = fig.to_image(format="png", width=1225, height=700)
                 img_buffer = io.BytesIO(img_bytes)
                 
-                # Agregar título del gráfico
                 elements.append(Paragraph(nombre_grafico, styles['Heading3']))
                 elements.append(Spacer(1, 0.1*inch))
-                
-                # Agregar imagen
+
                 img = Image(img_buffer, width=8.6*inch, height=5*inch)
                 elements.append(img)
                 elements.append(Spacer(1, 0.3*inch))
@@ -223,28 +215,24 @@ def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tabl
         
         
     
-    # SECCIÓN: TABLAS
+    ## Tablas ##
     if tablas_dict:
         elements.append(Paragraph("Datos Detallados", styles['Heading2']))
         elements.append(Spacer(1, 0.2*inch))
         
         for nombre_tabla, df in tablas_dict.items():
-            # Título de la tabla
             elements.append(Paragraph(f"{nombre_tabla} ({len(df)} registros)", styles['Heading3']))
             elements.append(Spacer(1, 0.1*inch))
             
-            # Crear tabla
             if nombre_tabla == 'Últimos Registros':
-                # Convertir DataFrame a lista (máximo n filas por tabla)
                 df_truncado = df.head(50)
                 data = [df_truncado.columns.tolist()] + df_truncado.values.tolist()
-                ## CASO ESPECIAL ##
+                ## Caso especial ##
                 if formato and formato == 'Mostrar Descripción e Informe':
                     for element in data[1:]:
                         element[1] = Paragraph(str(element[1]))
                         element[2] = Paragraph(str(element[2]))
                     table = Table(data,colWidths=[1.2*inch, 4*inch, 5*inch],splitByRow=True)
-                    ##df_formato = df[['FECHA Y HORA', 'TIPO DE PROCEDIMIENTO','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)','INFORME']].tail(50)                
                 else:
                     for element in data[1:]:
                         element[1] = Paragraph(str(element[1]))
@@ -269,14 +257,13 @@ def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tabl
             elements.append(Spacer(1, 0.2*inch))
             elements.append(PageBreak())
     
-    # Construir PDF
+    ## Construir PDF ##
     doc.build(elements)
     pdf_buffer.seek(0)
     
     return pdf_buffer
-########################
 
-# GRÁFICOS
+## Funciones de gráficos ##
 fig_barras = px.bar(
     df.groupby('CUADRANTE').size().reset_index(name='cantidad'),
     x='CUADRANTE',
@@ -316,7 +303,7 @@ def barra(filtro):
     return fig_barras
 
 
-##
+## Creo rango de fechas, solo cuando el dataframe filtrado tenga alguna entrada ##
 if len(df) > 0:
     df['fecha'] = df['FECHA Y HORA'].dt.date
     fechas = pd.date_range(
@@ -338,7 +325,6 @@ if len(df) > 0:
         markers=True
     )
 
-# ==================== EXPORTAR A PDF ====================
 
 st.markdown("---")
 st.subheader("📥 Descargar Reporte")
@@ -346,7 +332,7 @@ st.subheader("📥 Descargar Reporte")
 if st.button("Generar PDF"):
     with st.spinner("Generando PDF..."):
         try:
-            # Preparar métricas
+            ## Preparar métricas ##
             if len(df) > 0:
                 dias_cubiertos = ((df['FECHA Y HORA'].max() - df['FECHA Y HORA'].min()).days)+1
             elif len(df) == 0:
@@ -361,7 +347,7 @@ if st.button("Generar PDF"):
                 'Dias cubiertos': dias_cubiertos,
                 'Promedio diario': round(len(df) / max(dias_cubiertos, 1), 1)
             }
-            # Preparar gráficos
+            ## Preparar gráficos ##
             graficos = {
                 'Registros por Cuadrante': fig_barras,
                 'Reportes por Hora': barra('Hora'),
@@ -371,7 +357,7 @@ if st.button("Generar PDF"):
                 'Evolución Temporal': fig_linea,
             }
             
-            # Preparar tablas
+            ## Preparar tablas ##
             if formato:
                 if formato == 'Mostrar Descripción':
                     df_formato = df[['FECHA Y HORA', 'TIPO DE PROCEDIMIENTO','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)']].tail(50)
@@ -388,7 +374,7 @@ if st.button("Generar PDF"):
                 'Últimos Registros': df_formato,
             }
             
-            # Crear PDF
+            ## Crear PDF ##
             if not titulo:
                 titulo = "Reporte de Análisis de Procedimientos"
             if not autor:
@@ -401,7 +387,7 @@ if st.button("Generar PDF"):
                 tablas
             )
             
-            # Descargar
+            ## Descargar ##
             st.download_button(
                 label="📥 Descargar PDF",
                 data=pdf,

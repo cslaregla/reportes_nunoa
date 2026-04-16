@@ -3,16 +3,17 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+## Configuración inicial aplicación ##
 st.set_page_config(page_title="Gráficas Comparativas", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
-
 st.title("⚖️ Gráficas Comparativas Reportes Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
-# Título y botones en una fila
+
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -39,6 +40,7 @@ with col6:
     if st.button("Gráficas Comparativas", key='nav_comp', width='stretch'):
         st.switch_page("pages/5_Graficas_Comparativas.py")
 st.markdown("---")
+
 ## Cargo el excel ##
 dfr = pd.read_csv('info.csv', sep=';', engine='python')
 dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
@@ -116,13 +118,14 @@ if st.button("Ver Gráfica Comparativa"):
                     y="Valor", 
                     color="Año",
                     barmode="group")
+        
         ## Gráfico de barra doble ##
         st.plotly_chart(fig,width='stretch')
 
         ## Tabla que muestra lo mismo que el gráfico de barra ##
         st.dataframe(df2, width='stretch', hide_index=True)
 
-        ## RECORRO TODOS LOS PROCEDIMIENTOS ##
+        ## Recorro todos los procedimientos ##
         df = dfr.copy()
         filt = (df['FECHA Y HORA'].dt.strftime('%m-%d') >= fcinicio) & (df['FECHA Y HORA'].dt.strftime('%m-%d') <= fcfinal)
         dff = df[filt]
@@ -133,7 +136,7 @@ if st.button("Ver Gráfica Comparativa"):
         for tipo in tipos:
             st.subheader(f"{tipo}")
             df_tipo = df[df["TIPO DE PROCEDIMIENTO"] == tipo]
-            ## ESTE FUNCIONA PARA LAS SEMANAS ##
+            ## Este funciona para las semanas ##
             df_grouped = (
                 df_tipo.groupby(["AÑO", "SEMANA"])
                     .size()
@@ -148,7 +151,7 @@ if st.button("Ver Gráfica Comparativa"):
                 y="CANTIDAD",
                 color="AÑO"
             )
-            ## ESTE FUNCIONA PARA LOS DÍAS ## 
+            ## Este funciona para los días (comentar/descomentar uno u otro según corresponda) ## 
             # df_grouped = (
             #     df_tipo.groupby(["AÑO", "DIA DEL ANO"])
             #         .size()

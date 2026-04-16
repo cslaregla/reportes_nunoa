@@ -3,16 +3,18 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 import numpy as np
+
+## Configuración inicial aplicación ##
 st.set_page_config(page_title="Dashboard", layout="wide")
 st.logo("./logo.png",size='large',icon_image="./logo.png")
-
 st.title("📈 Dashboard Reportes Central Ñuñoa 2026")
-##### VALIDACIÓN USUARIO #####
+
+## Validación por seguridad ##
 from auth import check_auth
 if not check_auth():
     st.stop()
-##############################
-# Título y botones en una fila
+
+## Título y botones en una fila ##
 col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
@@ -39,32 +41,36 @@ with col6:
     if st.button("Gráficas Comparativas", key='nav_comp', width='stretch'):
         st.switch_page("pages/5_Graficas_Comparativas.py")
 st.markdown("---")
+
 ## Cargo el excel ##
 dfr = pd.read_csv('info.csv', sep=';', engine='python')
 dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
 dias_hist = ((dfr['FECHA Y HORA'].max() - dfr['FECHA Y HORA'].min()).days)+1
 prom_hist = round(len(dfr) / max(dias_hist, 1), 1)
 last_hist = dfr.iloc[-1]['FECHA Y HORA']
-##
+
+## Función auxiliar para evitar errores de formato ##
 def is_time(time_str):
     try:
         datetime.strptime(str(time_str), '%H:%M')
         return True
     except ValueError:
         return False
-##
+
+
 ## Agrego la opción de elegir un período ##
 col1, col2 = st.columns(2)
 with col1:
     finicio = st.date_input("Fecha inicial:", value=None)
 with col2:
     ffinal = st.date_input("Fecha final:", value=None)
-###########################################
+
 if finicio and ffinal:
     df = dfr[(dfr['FECHA Y HORA'].dt.date >= finicio) & (dfr['FECHA Y HORA'].dt.date <= ffinal)].copy()
 else:
     df = dfr.copy()
 st.markdown(f"*Última Actualización: {last_hist}")
+
 st.subheader(f"ℹ️ Métricas Principales")
 dias_cubiertos = ((df['FECHA Y HORA'].max() - df['FECHA Y HORA'].min()).days)+1
 met1, met2, met3, met4 = st.columns(4)
@@ -129,12 +135,12 @@ with met12:
     promf = promf.split('.')[0]
     st.metric("Media Tiempo Asignación-Arribo",promf)
 
-## COM FUNCIONES ##
+## Funciones de gráficos y auxiliares para gráficos ##
 def get_rango_horario(hora):
     """Convierte hora (0-23) en rango de 4 horas"""
     rango = int((hora // 4) * 4)
     return f"{rango:02d}:00 - {rango+3:02d}:59"
-##
+
 def pie_tipo(cat):
     df_filtrado = df[df['CATEGORIA'] == cat]
     df_pie = df_filtrado.groupby('TIPO DE PROCEDIMIENTO').size().reset_index(name='cantidad')
@@ -150,7 +156,7 @@ def pie_tipo(cat):
         hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
     )
     st.plotly_chart(fig_pie, width='stretch')
-##
+
 def pie(filtro):
     df_pie = df.groupby(filtro).size().reset_index(name='cantidad')
     titulo = filtro.title()
@@ -175,7 +181,7 @@ def pie(filtro):
         )
     )
     st.plotly_chart(fig_pie, width='stretch')
-##
+
 def barra(filtro):
     if filtro == 'Día de la Semana':
         l1 = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']
@@ -207,7 +213,7 @@ def barra(filtro):
         yaxis_title='Reportes'
     )
     st.plotly_chart(fig_barras,width='stretch')
-##
+
 def matriz(filtro):
     dfm = df.copy()
     titulo = filtro.upper()
@@ -241,13 +247,13 @@ def matriz(filtro):
         yaxis_title='Rango Horario'
     )
     st.plotly_chart(fig_heatmap, width='stretch')
-## FIN FUNCIONES ##
+
 st.markdown("### 📊 Análisis General")
-## GRÁFICOS I, II ##
+## Gráficos I, II ##
 pie('CUADRANTE')
 pie('CANAL DE INGRESO')
 
-## GRÁFICO III, IV, V ##
+## Gráficos III, IV, V ##
 barra('Día de la Semana')
 barra('Hora')
 barra('CATEGORIA')
@@ -274,7 +280,7 @@ fig = px.scatter(
 st.plotly_chart(fig, width='stretch')
 st.markdown("### 📈 Análisis Temporal")
 
-## GRÁFICO VIII ##
+## Gráfico VIII ##
 df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
 df['fecha'] = df['fecha_completa'].dt.date
 df_linea = df.groupby('fecha').size().reset_index(name='cantidad')
@@ -305,7 +311,7 @@ fig = px.line(df_semana, x='semana', y='cantidad',
               title='Tendencia Semanal', markers=True)
 st.plotly_chart(fig, width='stretch')
 
-## TABLA DE FRECUENCIA DE TODOS LOS PROCEDIMIENTOS ##
+## Tabla de frecuencia del total de procedimientos ##
 st.markdown("### 📁 Desglose del Total de Procedimientos")
 a = df['TIPO DE PROCEDIMIENTO'].value_counts() .reset_index().rename(columns={'TIPO DE PROCEDIMIENTO': 'Tipo de Procedimiento', 'count': 'Frecuencia'})
 st.dataframe(a,width='stretch')
@@ -313,11 +319,11 @@ st.dataframe(a,width='stretch')
 
 st.markdown("### 📅 Análisis Detallado")
 
-## GRÁFICO X, XI ##
+## Gráficos X, XI ##
 matriz('Cuadrante')
 matriz('Categoria')
 
-## GRÁFICO XII ##
+## Gráfico XII ##
 df['fecha_completa'] = pd.to_datetime(df['FECHA Y HORA'])
 df['hora'] = df['fecha_completa'].dt.hour
 df = df.dropna(subset=['hora'])
@@ -352,7 +358,7 @@ fig_heatmap.update_layout(
 )
 st.plotly_chart(fig_heatmap, width='stretch')
 
-## GRÁFICOS XIII, XIV, XV, XVI, XVII, XVIII ##
+## Gráficos XIII, XIV, XV, XVI, XVII, XVIII ##
 pie_tipo('Seguridad')
 pie_tipo('Planes Operativos')
 pie_tipo('Emergencia/Espacio Públicos')
