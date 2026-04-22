@@ -84,8 +84,8 @@ def fcanalingreso(valor):
 df = df[['NRO','ID ASIGNADO /TICKET','FECHA Y HORA','OPERADOR','CANAL DE INGRESO','TIPO DE RECURRENTE','AREA O SECCIÓN DEL RECURRENTE','NOMBRE DE RECURRENTE','TELEFONO RECURRENTE','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)','CATEGORIA','TIPO DE PROCEDIMIENTO','CALLE','NUMERACIÓN','CALLE QUE INTERSECTA','LUGAR PÚBLICO /  PRIVADO','ACLARATORIA DE LA UBICACIÓN','CUADRANTE','RADIOPERADOR DE TURNO','NRO DE MOVIL','INSPECTOR ASIGNADO AL PROCEDIMIENTO','ESTADO DEL PROCEDIMIENTO','HORA DE ASIGNACION A INSPECTOR','HORA DE ARRIBO','HORA DE TERMINO','INFORME','FINALIZACIÓN','APOYO/ASISTENCIA','COMISARIA','SEREMI','DERIVACIÓN A OTRA COMUNA',"OBSERVACIONES , DATOS GENERALES , ADICIONALES",'CONNOTACIÓN','COORDENADAS']]
 
 ## Aplico las funciones al nuevo archivo (En caso de ser necesario)##
-# df['CUADRANTE'] = df['CUADRANTE'].apply(fcuadrante)
-# df['CANAL DE INGRESO'] = df['CANAL DE INGRESO'].apply(fcanalingreso)
+df['CUADRANTE'] = df['CUADRANTE'].apply(fcuadrante)
+df['CANAL DE INGRESO'] = df['CANAL DE INGRESO'].apply(fcanalingreso)
 #df['CALLE'] = df['CALLE'].apply(fcalle)
 
 ## Imprimo los elementos diferentes que hay en un campo en especifico (para corregir errores) ##
@@ -93,10 +93,15 @@ lfinal = ['7X3 delitos violentos', 'Accidente de tránsito (choque/colisión/atr
 'Emergencia de salud', 'Filtración agua potable', 'Fiscalizacion Retiro de circulación de vehiculo motorizado', 'Fiscalizacion Ruidos Molestos', 'Fiscalizaciones (BNUP, comercio, etc)', 'Fiscalización alcoholes', 'Fiscalización aparcadores ilegales', 'Fiscalización de tránsito', 'Fiscalización ingesta de alcohol en vía pública', 'Fuegos artificiales', 'Homicidio', 'Homicidio Frustrado', 'Hurto', 
 'Incendio o amago', 'Incumplimiento medida cautelar', 'Labores administrativas', 'Maltrato animal', 'Marchas/manifestaciones', 'Mascota atrapada/perdida', 'Microbasural', 'Motochorros ', 'Novedades Central', 'Operativo Conjunto Carabineros', 'Operativo Conjunto a otras Municipalidades', 'Operativo MTT', 'Operativo Seremi Salud', 'Operativo conjunto Delegación Presidencial', 'Operativo conjunto Dirección de Inspección', 'Operativo otras direcciones Municilapales', 'Operativos Conjunto PDI', 'Otra contingencia BNUP', 'Otros', 'P.V.P', 'Patrulla Mixta', 'Patrullaje focalizado Carabineros', 'Patrullaje focalizado Preventivo', 'Patrullaje preventivo general', 'Pavimento en mal estado', 'Persona extraviada / desorientada', 'Persona situación de calle', 'Posible Fallecido/Emergencia de Salud', 
 'Posible sospechoso al interior', 'Postes dañados', 'Punto fijo', 'Riña', 'Robo con intimidación', 'Robo con violencia', 'Robo de especies de o desde vehículo', 'Robo de vehículo en BNUP', 'Robo en BNUP', 'Robo en lugar habitado', 'Robo en lugar no habitado', 'Robo frustrado', 'Robo por sorpresa', 'Ruta calle', 'Semáforo defectuoso', 'Servicio Estadio', 'Servicio FEI', 'Servicio especial Colegios', 'Servicio turístico Plaza Ñuñoa-Barrio Italia', 'Señalética o elemento caida', 'Suicidio/Intento', 'Tapa de servicios', 'Toma establecimiento educacional', 'Trabajos fuera de horario', 'Trafico Drogas', 'Traslado de documentos o funcionarios/limpieza de móvil', 'VIF', 'Vehiculo MAL Estacionado', 'Vehiculo sospechoso', 'Vehículo abandonado', 'Vehículo con encargo', 'Vehículo sospechoso', 'Vigilancia especial', 'Vulneración NNA', 'Vulneración derechos adultos mayores', 'Realizacion de Graffitis / Pintar sin autorización', 'Servicio DRONE', 'nan']
-# lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
+lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
+#print(list(df['CUADRANTE'].unique()))
 # for element in lprod:
 #     if element not in lfinal:
 #         print(str(element))
+# print('---')
+# for index, row in df.iterrows():
+#     if str(row['FECHA Y HORA']) == 'nan':
+#         print(row['NRO'])
 
 ## Imprime las entradas con un valor específico en un campo a especificar ##
 # c = 0
