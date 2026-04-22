@@ -37,7 +37,7 @@ with col5:
         st.switch_page("pages/4_Exportar_Reportes.py")
 
 with col6:
-    if st.button("Gráficas Comparativas", key='nav_comp', width='stretch'):
+    if st.button("Gráficas Comparativas", key='nav_comp', width='stretch', type="primary"):
         st.switch_page("pages/5_Graficas_Comparativas.py")
 st.markdown("---")
 

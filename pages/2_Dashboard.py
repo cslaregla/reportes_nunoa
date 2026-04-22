@@ -26,7 +26,7 @@ with col2:
         st.switch_page("pages/1_Mapa_Interactivo.py")
 
 with col3:
-    if st.button("Dashboard", key="nav_dash", width='stretch'):
+    if st.button("Dashboard", key="nav_dash", width='stretch', type="primary"):
         st.switch_page("pages/2_Dashboard.py")
 
 with col4:
@@ -47,6 +47,7 @@ dfr = pd.read_csv('info.csv', sep=';', engine='python')
 dfr['FECHA Y HORA'] = pd.to_datetime(dfr['FECHA Y HORA'])
 dias_hist = ((dfr['FECHA Y HORA'].max() - dfr['FECHA Y HORA'].min()).days)+1
 prom_hist = round(len(dfr) / max(dias_hist, 1), 1)
+first_hist = dfr.iloc[0]['FECHA Y HORA']
 last_hist = dfr.iloc[-1]['FECHA Y HORA']
 
 ## Función auxiliar para evitar errores de formato ##
@@ -69,7 +70,7 @@ if finicio and ffinal:
     df = dfr[(dfr['FECHA Y HORA'].dt.date >= finicio) & (dfr['FECHA Y HORA'].dt.date <= ffinal)].copy()
 else:
     df = dfr.copy()
-st.markdown(f"*Última Actualización: {last_hist}")
+st.markdown(f"Información integrada desde **{first_hist}** a **{last_hist}**")
 
 st.subheader(f"ℹ️ Métricas Principales")
 dias_cubiertos = ((df['FECHA Y HORA'].max() - df['FECHA Y HORA'].min()).days)+1

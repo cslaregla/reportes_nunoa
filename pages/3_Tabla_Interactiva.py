@@ -28,7 +28,7 @@ with col3:
         st.switch_page("pages/2_Dashboard.py")
 
 with col4:
-    if st.button("Tabla Interactiva", key="nav_tabla", width='stretch'):
+    if st.button("Tabla Interactiva", key="nav_tabla", width='stretch', type="primary"):
         st.switch_page("pages/3_Tabla_Interactiva.py")
 
 with col5:

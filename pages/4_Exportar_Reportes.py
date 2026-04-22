@@ -47,7 +47,7 @@ with col4:
         st.switch_page("pages/3_Tabla_Interactiva.py")
 
 with col5:
-    if st.button("Exportar Reportes", key="nav_report", width='stretch'):
+    if st.button("Exportar Reportes", key="nav_report", width='stretch', type="primary"):
         st.switch_page("pages/4_Exportar_Reportes.py")
 
 with col6:
@@ -56,7 +56,7 @@ with col6:
 st.markdown("---")
 
 st.subheader("Instrucciones de Uso:")
-st.markdown(f" 1. Elegir rango de fechas. En caso contrario, se elegirá el total del archivo.\n 2. Seleccionar* variables del reporte (Canal de Ingreso, Cuadrante, Categoría, Tipo de Procedimiento, Palabra Clave, Calle).\n 3. Seleccionar* variables de diseño (Título, Autor).")
+st.markdown(f" 1. Elegir rango de fechas. En caso contrario, se elegirá el total del archivo.\n 2. Seleccionar* variables del reporte (Canal de Ingreso, Cuadrante, Categoría, Tipo de Procedimiento, Palabra Clave, Calle).\n 3. Seleccionar* variables de diseño (Título, Autor, Formato Registros).")
 st.markdown("*Todas las variables son opcionales. Se incluye un título y autor pre-definido por defecto.")
 
 ## Filtros de fecha ##
@@ -93,7 +93,6 @@ op_hinicio = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:
 op_hfinal = {0:'00:00',1:'01:00',2:'02:00',3:'03:00',4:'04:00',5:'05:00',6:'06:00',7:'07:00',8:'08:00',9:'09:00',10:'10:00',11:'11:00',12:'12:00',13:'13:00',14:'14:00',15:'15:00',16:'16:00',17:'17:00',18:'18:00',19:'19:00',20:'20:00',21:'21:00',22:'22:00',23:'23:00', 24:'24:00'}
 op_mes = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'}
 op_ano = [2020,2021,2022,2023,2024,2025,2026]
-op_autor = ['Favio Jadrievic', 'Lionel Messi', 'Neil Armstrong', 'Henry James']
 op_formato = ['Mostrar Descripción', 'Mostrar Informe', 'Mostrar Descripción e Informe']
 opi_hinicio = list(op_hinicio.items())
 opi_hfinal = list(op_hfinal.items())
@@ -120,9 +119,9 @@ with col6:
 with col7:
     titulo = st.text_input("Título",'',placeholder="Elige")
 with col8:
-    autor = st.selectbox("Autor", op_autor, index=None, placeholder='Elige')
+    autor = st.text_input("Autor", '', placeholder='Elige')
 with col9:
-    formato = st.selectbox("Fotmato Registros", op_formato, index=None, placeholder='Elige')
+    formato = st.selectbox("Formato Registros", op_formato, index=None, placeholder='Elige')
 
 if ingreso:
     df= df[df['CANAL DE INGRESO'] == ingreso]
@@ -238,6 +237,10 @@ def crear_pdf_con_graficos_y_tablas(titulo, autor, metricas, graficos_dict, tabl
                         element[1] = Paragraph(str(element[1]))
                         element[2] = Paragraph(str(element[2]))
                     table = Table(data,colWidths=[1.2*inch, 1.8*inch, 5*inch])
+            elif nombre_tabla == 'Tipos de procedimiento por frecuencia':
+                df_truncado = df.head(30)
+                data = [df_truncado.columns.tolist()] + df_truncado.values.tolist()
+                table = Table(data)
             else:
                 df_truncado = df.head(15)
                 data = [df_truncado.columns.tolist()] + df_truncado.values.tolist()
@@ -368,9 +371,9 @@ if st.button("Generar PDF"):
             if not formato:
                 df_formato = df[['FECHA Y HORA', 'TIPO DE PROCEDIMIENTO','DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)']].tail(50)
             tablas = {
-                'Top Cuadrantes': df['CUADRANTE'].value_counts().reset_index(name='Cantidad').head(10),
-                'Top Tipos': df['TIPO DE PROCEDIMIENTO'].value_counts().reset_index(name='Cantidad').head(10),
-                'Top Calles': df['CALLE'].value_counts().reset_index(name='Cantidad').head(10),
+                'Cuadrantes por frecuencia': df['CUADRANTE'].value_counts().reset_index(name='Cantidad').head(10),
+                'Tipos de procedimiento por frecuencia': df['TIPO DE PROCEDIMIENTO'].value_counts().reset_index(name='Cantidad').head(30),
+                'Calles por frecuencia': df['CALLE'].value_counts().reset_index(name='Cantidad').head(10),
                 'Últimos Registros': df_formato,
             }
             
@@ -378,7 +381,7 @@ if st.button("Generar PDF"):
             if not titulo:
                 titulo = "Reporte de Análisis de Procedimientos"
             if not autor:
-                autor = 'Municipalidad de Ñuñoa'
+                autor = 'Dirección de Seguridad Pública Ñuñoa'
             pdf = crear_pdf_con_graficos_y_tablas(
                 f"{titulo}: {finicio} a {ffinal}",
                 autor,

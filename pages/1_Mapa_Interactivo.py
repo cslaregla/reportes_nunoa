@@ -24,7 +24,7 @@ with col1:
         st.switch_page("app.py")
 
 with col2:
-    if st.button("Mapa Interactivo", key="nav_mapa", width='stretch'):
+    if st.button("Mapa Interactivo", key="nav_mapa", width='stretch', type="primary"):
         st.switch_page("pages/1_Mapa_Interactivo.py")
 
 with col3:
@@ -238,7 +238,12 @@ if st.session_state.mostrar_mapa:
         folium.Marker(
             location=[centro_lat, centro_lng],
             icon=folium.features.DivIcon(html=f'''
-                <div style="font-size: 20px;color: blue; font-weight: bold;">{element}</div>
+                <div style="font-size: 25px;color: white;
+                                           text-shadow: 
+    -1px -1px 0 #000,  
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000; font-weight: bold;">{element}</div>
             ''')
             ).add_to(m)
         
