@@ -46,7 +46,7 @@ with col6:
 
 ## Descripción general de la aplicación ##
 st.markdown("---")
-st.header("Bienvenido, esta herramienta permite:")
+st.header("Bienvenido a la plataforma de análisis de reportes ingresados por Central de Dirección de Seguridad Pública. En esta aplicación podrás:")
 st.write("""
 - 🗺️ Visualizar reportes georeferenciados en un mapa de calor
 - 📈 Analizar datos a través de gráficas y métricas
