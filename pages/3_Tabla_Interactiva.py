@@ -148,8 +148,18 @@ if numeracion:
     df_filtrado = df_filtrado[df_filtrado['NUMERACIÓN'].str.contains(numeracion, case=False, na=False)]
 if palabra:
     df_filtrado = df_filtrado[df_filtrado['INFORME'].str.contains(palabra, case=False, na=False) | df_filtrado['DESCRIPCION DEL PROCEDIMIENTO (DETALLES RELEVANTES)'].str.contains(palabra, case=False, na=False)]
-
+    
+## RESALTAR ##
+def highlight(val):
+    if palabra and palabra.lower() in str(val).lower():
+        return "background-color: yellow"
+    return ""
+if palabra:
+    df_estilado = df_filtrado.style.map(highlight)
+if not palabra:
+    df_estilado = df_filtrado
 ## Muestro el resultado en una tabla ##
 st.subheader("Resultados")
 st.write(f"Total de registros: {len(df_filtrado)}")
-st.dataframe(df_filtrado[df_filtrado.columns[2:26]], width='stretch')
+#st.dataframe(df_filtrado[df_filtrado.columns[2:26]], width='stretch')
+st.dataframe(df_estilado,width='stretch')
