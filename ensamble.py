@@ -2,23 +2,23 @@ import pandas as pd
 
 ## CONCATENAR DOS CSV EN UNO ##
 # Aquí crea las variables de los archivos que quieras unir ##
-file1 = 'info.csv'
-file2 = 'infoaddP.csv'
+# file1 = 'info.csv'
+# file2 = 'infoaddP.csv'
 
-# Aquí crea el dataframe asociado a cada archivo ##
-df1 = pd.read_csv(file1, encoding='utf-8',sep=';')
-df2 = pd.read_csv(file2, encoding='utf-8',sep=';')
-## Unes aquí todos los dataframes en una lista ##
-frames = [df1,df2]
+# # Aquí crea el dataframe asociado a cada archivo ##
+# df1 = pd.read_csv(file1, encoding='utf-8',sep=';')
+# df2 = pd.read_csv(file2, encoding='utf-8',sep=';')
+# ## Unes aquí todos los dataframes en una lista ##
+# frames = [df1,df2]
 
-## Concatenas todo ##
-result = pd.concat(frames)
+# ## Concatenas todo ##
+# result = pd.concat(frames)
 
-## Imprimes el resultado ##
-print(result)
+# ## Imprimes el resultado ##
+# print(result)
 
-# Guardas el .csv con la información unificada ##
-result.to_csv('infop.csv', index=False,sep=';')
+# # Guardas el .csv con la información unificada ##
+# result.to_csv('infop.csv', index=False,sep=';')
 
 ## AGREGAR COORDENADAS A ARCHIVO SIN COORDENADAS ##
 # file1 = "infoadd"
