@@ -143,5 +143,5 @@ for index, row in df.iterrows():
 # print(s/c)
 
 ## Lo guardo en un nuevo archivo que tendrá el mismo nombre que el original pero + 'P' al final, para poder diferenciarlo ##
-df.to_csv('infoadd.csv', index=False,sep=';')
+#df.to_csv('infoadd.csv', index=False,sep=';')
 
