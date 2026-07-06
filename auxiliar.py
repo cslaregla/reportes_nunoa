@@ -109,7 +109,7 @@ lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
 
 ## Chequeo entradas mal ingresadas ##
 for index, row in df.iterrows():
-    if str(row['TIPO DE PROCEDIMIENTO']) == 'Instalacion de cables ':
+    if str(row['TIPO DE PROCEDIMIENTO']) == 'VIGILANCIA ESPECIAL':
         print(row['NRO'])
 
 ## Chequeo tipos de procedimientos mal ingresados ##
@@ -145,5 +145,5 @@ for index, row in df.iterrows():
 # print(s/c)
 
 ## Lo guardo en un nuevo archivo que tendrá el mismo nombre que el original pero + 'P' al final, para poder diferenciarlo ##
-#df.to_csv('infoadd.csv', index=False,sep=';')
+df.to_csv('infoadd.csv', index=False,sep=';')
 
