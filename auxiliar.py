@@ -73,6 +73,8 @@ def fcanalingreso(valor):
         return 'INTERNO'
     elif valor == 'WHATSAPP':
         return 'INTERNO'
+    elif valor == 'WASAP':
+        return 'INTERNO'
     elif valor == 'INSPECTOR EN TERRENO':
         return 'INTERNO'
     elif valor == 'Otros':
@@ -111,7 +113,7 @@ lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
 
 ## Chequeo entradas mal ingresadas ##
 for index, row in df.iterrows():
-    if str(row['CANAL DE INGRESO']) == 'ALARA':
+    if str(row['TIPO DE PROCEDIMIENTO']) == 'nan':
         print(row['NRO'])
 
 ## Chequeo tipos de procedimientos mal ingresados ##
