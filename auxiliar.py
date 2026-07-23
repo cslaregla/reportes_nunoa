@@ -75,6 +75,8 @@ def fcanalingreso(valor):
         return 'INTERNO'
     elif valor == 'WASAP':
         return 'INTERNO'
+    elif valor == 'WSP':
+        return 'INTERNO'
     elif valor == 'INSPECTOR EN TERRENO':
         return 'INTERNO'
     elif valor == 'Otros':
@@ -113,7 +115,7 @@ lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
 
 ## Chequeo entradas mal ingresadas ##
 for index, row in df.iterrows():
-    if str(row['TIPO DE PROCEDIMIENTO']) == 'ROBO DE VEHICULO':
+    if str(row['TIPO DE PROCEDIMIENTO']) == 'SEGUIMIENTO':
         print(row['NRO'])
 
 ## Chequeo tipos de procedimientos mal ingresados ##
