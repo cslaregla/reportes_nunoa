@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 ## Aquí va el nombre del archivo a añadir. Se recomienda un nombre breve tipo: infoMESAÑO. Aqui va el nombre sin la extensión (que debe ser siempre csv) ##
-new_file = 'infojuliopx'
+new_file = 'infopx'
 
 ## Con la librería pandas creo un dataframe del archivo leído ##
 df = pd.read_csv(new_file+'.csv',sep=';',engine='python')
@@ -106,16 +106,16 @@ lfinal = ['7X3 delitos violentos', 'Accidente de tránsito (choque/colisión/atr
 lprod = list(df['TIPO DE PROCEDIMIENTO'].unique())
 
 ## Correr esto para un chequeo exhaustivo ##
-print('CUADRANTES ENCONTRADOS:')
-print(list(df['CUADRANTE'].unique()))
-print('CANALES DE INGRESO ENCONTRADOS')
-print(list(df['CANAL DE INGRESO'].unique()))
-print('CATEGORIAS ENCONTRADAS')
-print(list(df['CATEGORIA'].unique()))
+# print('CUADRANTES ENCONTRADOS:')
+# print(list(df['CUADRANTE'].unique()))
+# print('CANALES DE INGRESO ENCONTRADOS')
+# print(list(df['CANAL DE INGRESO'].unique()))
+# print('CATEGORIAS ENCONTRADAS')
+# print(list(df['CATEGORIA'].unique()))
 
 ## Chequeo entradas mal ingresadas ##
 for index, row in df.iterrows():
-    if str(row['CANAL DE INGRESO']) == 'ALARA':
+    if str(row['TIPO DE PROCEDIMIENTO']) == 'Trabajos en via publica ':
         print(row['NRO'])
 
 ## Chequeo tipos de procedimientos mal ingresados ##
